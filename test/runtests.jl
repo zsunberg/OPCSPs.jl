@@ -1,5 +1,6 @@
 using OPCSPs
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
+include("apply_measurement.jl")
+include("simple_op.jl")
+include("simple_opcsp.jl")
