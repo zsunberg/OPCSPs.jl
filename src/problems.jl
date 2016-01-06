@@ -5,7 +5,7 @@ end
 
 function gen_two_cluster_problem(;distance_limit=6.0,
                                   n_nodes=10,
-                                  p=0.4,
+                                  p=0.4, # probability of connection
                                   rng=MersenneTwister(),
                                   noise=1.0
                                   )
@@ -25,7 +25,6 @@ function gen_two_cluster_problem(;distance_limit=6.0,
     for i in 1:n_nodes
         for j in i+1:n_nodes
             if rand(rng) < p
-                # if there is a connection, uniformly select the correlation
                 sgn = rand(rng)
                 if sgn >= 0.5
                     rho = 0.99

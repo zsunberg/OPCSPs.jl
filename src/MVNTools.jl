@@ -32,6 +32,7 @@ end
 # the following version creates a copy
 function apply_measurement(d::MVN, index::Int, meas::Float64)
     @assert d.covariance[index,index] >= 0.0
+    @assert !isnan(meas)
     if d.covariance[index,index] == 0.0
         @assert meas == d.mean[index]
         return MVN(copy(d.mean), copy(d.covariance))
@@ -43,6 +44,8 @@ function apply_measurement(d::MVN, index::Int, meas::Float64)
 
     covariance[:, index] = 0.0
     covariance[index, :] = 0.0
+
+    # @assert all(mean.==mean) # this will check for NaNs
 
     return MVN(mean, covariance)
 end

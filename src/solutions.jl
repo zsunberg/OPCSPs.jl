@@ -44,7 +44,7 @@ function solve_op(op::OrienteeringProblem; output=0)
     path = [op.start]
     current = -1
     dist_sum = 0.0
-    xopt = getValue(x)
+    xopt = round(Int,getValue(x))
     while current != op.stop
         if current==-1
             current=op.start

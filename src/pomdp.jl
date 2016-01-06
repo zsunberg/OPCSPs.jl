@@ -59,7 +59,7 @@ updater(p::OPCSP) = OPCSPUpdater(p)
 create_belief(updater::OPCSPUpdater) = create_belief(updater.problem)
 initial_belief(p::OPCSP) = OPCSPDistribution(
     p.start,
-    IntSet(1:length(p)),
+    delete!(IntSet(1:length(p)), p.start),
     p.distance_limit, 
     MVN(zeros(length(p)), p.covariance)
     )
@@ -68,14 +68,15 @@ initial_belief(p::OPCSP) = OPCSPDistribution(
 # note that state transitions are deterministic
 function transition(problem::OPCSP, s::OPCSPState, a::OPCSPAction, sp::OPCSPState=create_transition_distribution(problem))
     sp.i = a.next
-    copy!(sp.open, s.open)
+    copy!(sp.open, s.open) # if performance is an issue, then change this to = and move delete! to rand!
     delete!(sp.open, a.next)
+    sp.mu = s.mu
     sp.d_remaining = s.d_remaining - problem.distances[s.i, a.next]
     return sp
 end
 function rand!(::AbstractRNG, s::OPCSPState, sd::OPCSPState)
     s.i = sd.i
-    s.open = sd.open
+    copy!(s.open, sd.open)
     s.mu = sd.mu
     s.d_remaining = sd.d_remaining
     return s
@@ -96,15 +97,15 @@ isterminal(op::OPCSP, s::OPCSPState) = op.stop == s.i
 discount(op::OPCSP) = 1.0
 
 type OPCSPActionSpace <: AbstractSpace
-    coll::Array{Int}
+    coll::Array{Int} # this may be larger than the actual action space to avoid reallocations - make sure to use len
     len::Int
 end
 length(as::OPCSPActionSpace) = as.len
 OPCSPActionSpace() = OPCSPActionSpace(Array(Int,0),0)
 ## iteration ##
-start(as::OPCSPActionSpace) = 1
-done(as::OPCSPActionSpace, state) = state
-next(as::OPCSPActionSpace, state) = (n=next(as.coll, state); return (OPCSPAction(n[1]), n[2]))
+Base.start(as::OPCSPActionSpace) = 1
+Base.done(as::OPCSPActionSpace, state) = state > as.len
+Base.next(as::OPCSPActionSpace, state) = (OPCSPAction(as.coll[state]), state+1)
 domain(as::OPCSPActionSpace) = as
 
 function rand!(rng::AbstractRNG, a::OPCSPAction, as::OPCSPActionSpace)
@@ -120,7 +121,7 @@ actions(op::OPCSP) = actions(op, OPCSPDistribution(op.start,
                                                    op.distance_limit,
                                                    MVN(zeros(0),ones(0,0))))
 
-function actions(op::OPCSP, b::OPCSPDistribution, as::OPCSPActionSpace=OPCSPActionSpace())
+function actions(op::OPCSP, b::Union{OPCSPDistribution, OPCSPState}, as::OPCSPActionSpace=OPCSPActionSpace())
     if length(as.coll) < length(op)
         resize!(as.coll, length(op))
     end

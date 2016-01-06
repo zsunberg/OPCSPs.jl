@@ -1,6 +1,6 @@
 module OPCSPs
 
-import POMDPs: POMDP, State, Action, Observation, Belief, BeliefUpdater, AbstractSpace
+import POMDPs: POMDP, State, Action, Observation, Belief, BeliefUpdater, AbstractSpace, Policy
 import POMDPs: rand!, actions, updater, initial_belief, domain, isterminal
 import POMDPs: transition, observation, action, reward, update, discount
 import POMDPs: create_state, create_observation, create_action, create_belief
@@ -13,7 +13,9 @@ using OPCSPs.MVNTools
 export MVNTools
 
 export OPCSP,
-       SimpleOP
+       SimpleOP,
+       SolveMeanFeedback,
+       OPCSPUpdater
 
 export solve_op,
        solve_opcsp_feedback,
@@ -62,5 +64,6 @@ include("pomdp.jl")
 include("problems.jl")
 include("util.jl")
 include("solutions.jl")
+include("rollouts.jl")
 
 end # module
