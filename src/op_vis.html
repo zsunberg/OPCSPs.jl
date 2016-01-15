@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!--<title>{{Title}}</title>-->
+<style>
+.background {
+    fill: none;
+}
+#chart1 .link {
+  stroke: #999;
+  stroke-opacity: 0.6;
+  stroke-linecap: round;
+}
+#chart1 .node {
+  fill-opacity: 0.6;
+}
+</style>
+</head>
+<body>
+<p id="chart1">
+<svg width="960" height="500">
+    <rect class="background" width="500" height="500"></rect>
+    {{#edges}}
+    <line class="link" x1="{{x1s}}" x2="{{x2s}}" y1="{{y1s}}" y2="{{y2s}}" style="stroke-width: {{ws}}px"></line>
+    {{/edges}}
+    {{#nodes}}
+    <circle class="node" cx="{{xs}}" cy="{{ys}}" r="{{us}}" style="fill:#B41F2C;"></circle>
+    <circle class="node" cx="{{xs}}" cy="{{ys}}" r="{{rs}}" style="fill:rgb(31, 119, 180);"></circle>
+    {{/nodes}}
+</svg>
+</p>
+</body>
+</html>

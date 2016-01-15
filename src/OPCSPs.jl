@@ -21,8 +21,11 @@ export solve_op,
        solve_opcsp_feedback,
        cheat,
        gen_opcsp,
+       gen_op,
        gen_two_cluster_problem,
-       updater
+       gen_problem,
+       updater,
+       reward
 
 abstract OrienteeringProblem <: POMDP
 
@@ -65,5 +68,6 @@ include("problems.jl")
 include("util.jl")
 include("solutions.jl")
 include("rollouts.jl")
+include("visualization.jl")
 
 end # module

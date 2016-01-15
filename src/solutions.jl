@@ -1,7 +1,7 @@
 using JuMP
 using Gurobi
 
-function solve_op(op::OrienteeringProblem; output=0)
+function solve_op(op::OrienteeringProblem; output=0, relax=false)
     m = Model(solver=Gurobi.GurobiSolver(OutputFlag=output))
     N = length(op)
 
@@ -9,8 +9,13 @@ function solve_op(op::OrienteeringProblem; output=0)
     without_stop = [1:op.stop-1; op.stop+1:N]
     without_both = intersect(without_start, without_stop)
 
-    @defVar(m, x[1:N,1:N], Bin)
-    @defVar(m, 2 <= u[without_start] <= N, Int)
+    if relax
+        @defVar(m, 0 <= x[1:N,1:N] <= 1)
+        @defVar(m, 2 <= u[without_start] <= N)
+    else
+        @defVar(m, x[1:N,1:N], Bin)
+        @defVar(m, 2 <= u[without_start] <= N, Int)
+    end
 
     @setObjective(m, Max, sum{ sum{op.r[i]*x[i,j], j=1:N}, i=1:N })
 

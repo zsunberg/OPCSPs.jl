@@ -35,7 +35,7 @@ end
 function rand!(rng::AbstractRNG, s::OPCSPState, d::OPCSPDistribution)
     s.i = d.i
     copy!(s.open, d.open)
-    rand!(rng, s.mu, d.dist)
+    rand!(rng, s.mu, d.dist, robust=true)
     s.d_remaining = d.d_remaining
     return s
 end
