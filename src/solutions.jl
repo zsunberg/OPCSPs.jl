@@ -1,7 +1,34 @@
 using JuMP
 using Gurobi
 
-function solve_op(op::OrienteeringProblem; output=0, relax=false)
+type OPSolution
+    x
+    u
+end
+OPSolution() = OPSolution(nothing,nothing)
+
+function build_path(op::OrienteeringProblem, s::OPSolution)
+    xopt = round(Int,s.x)
+    path = [op.start]
+    current = -1
+    dist_sum = 0.0
+    while current != op.stop
+        if current==-1
+            current=op.start
+        end
+        current = findfirst(s.x[current,:])
+        push!(path, current)
+    end
+    return path
+end
+
+#=
+function next_guess(soln::OPSolution, i)
+    
+end
+=#
+
+function solve_op(op::OrienteeringProblem; output=0, initial::OPSolution=OPSolution())
     m = Model(solver=Gurobi.GurobiSolver(OutputFlag=output))
     N = length(op)
 
@@ -9,12 +36,15 @@ function solve_op(op::OrienteeringProblem; output=0, relax=false)
     without_stop = [1:op.stop-1; op.stop+1:N]
     without_both = intersect(without_start, without_stop)
 
-    if relax
-        @defVar(m, 0 <= x[1:N,1:N] <= 1)
-        @defVar(m, 2 <= u[without_start] <= N)
-    else
-        @defVar(m, x[1:N,1:N], Bin)
-        @defVar(m, 2 <= u[without_start] <= N, Int)
+    @defVar(m, x[1:N,1:N], Bin)
+    @defVar(m, 2 <= u[without_start] <= N, Int)
+
+    if !is(initial.x, nothing)
+        setValue(x, initial.x)
+        for keytuple in keys(u)
+            key = keytuple[1]
+            setValue(u[key], initial.u[key])
+        end
     end
 
     @setObjective(m, Max, sum{ sum{op.r[i]*x[i,j], j=1:N}, i=1:N })
@@ -35,112 +65,16 @@ function solve_op(op::OrienteeringProblem; output=0, relax=false)
 
     status = solve(m)
 
-    # if status != :Optimal
-    #     @bp
-    # end
     if status != :Optimal
         warn("Not solved to optimality:\n$op")
     end
 
-    # @show getObjectiveValue(m)
-    # @show getValue(x)
-    # @show getValue(u)
+    soln = OPSolution(getValue(x), getValue(u))
 
-    path = [op.start]
-    current = -1
-    dist_sum = 0.0
-    xopt = round(Int,getValue(x))
-    while current != op.stop
-        if current==-1
-            current=op.start
-        end
-        current = findfirst(xopt[current,:])
-        push!(path, current)
-    end
-    # @assert(distance(op, path) <= op.distance_limit)
-    if distance(op,path) > op.distance_limit
+    if distance(op,build_path(op,soln)) > op.distance_limit
         warn("Path Length: $(distance(op,path)), Limit: $(op.distance_limit)")
     end
-    return path
-end
-
-function solve_op_heur(op::OrienteeringProblem; rng=nothing)
-    openset = [1:length(op)]
-    total_dist = 0.0
-    @assert op.start != op.stop # code may not work for this case 
-    choice = -1
-    path = [op.start]
-    current = op.start
-    while current != op.stop
-        future = SimpleOP(op.r[openset],
-                          [],
-                          op.distance_limit-total_dist,
-                          findfirst(openset,path[end]),
-                          findfirst(openset,op.stop),
-                          op.distances[openset,openset])
-        choice = next_node_heur(future, rng=rng)
-        choice = openset[choice]
-        total_dist += op.distances[path[end],choice]
-        @show push!(path,choice)
-        splice!(openset,current)
-        current = choice
-    end
-    return path
-end
-
-# S-algorithm from Tsiligirides 1984
-function next_node_heur(op::OrienteeringProblem; rng=nothing)
-    if rng==nothing
-        rng = MersenneTwister(rand(Uint))
-    end
-
-    @assert op.start != op.stop
-
-    is_feasible(i) = op.distances[op.start,i]+op.distances[i,op.stop]<=op.distance_limit
-    feasible = nothing
-    # try
-    #     feasible = filter(is_feasible, [1:op.start-1, op.start+1:length(op)])
-    # catch e
-    #     @bp
-    # end
-    feasible = filter(is_feasible, [1:op.start-1, op.start+1:length(op)])
-    @assert length(feasible) > 0
-    
-    # Tsiligiride's notation
-
-    T_max = op.distance_limit
-    T = 0.0
-    S = op.r
-    C = op.distances
-    NPTS = length(op)
-    LAST = op.start
-
-    # r = 2.0
-    r = 1.0
-    a = 0.0
-
-    # DEL(j) = sum([S[i]/C[j,i] for i in feasible])
-    # E(j) = a*(T_max - T - C(LAST,j) - C(j,op.stop))*DEL(j)
-    E(j) = 0.0 # because a = 0.0 was used
-
-    A = zeros(length(op))
-    for j in 1:length(A)
-        if is_feasible(j) && j != op.start
-            A[j] = ((S[j] + E(j))/C[op.start,j])^r
-        end
-    end
-
-    sum_A = sum(A)
-    P = [A[j]/sum_A for j in 1:length(op)]
-
-    rn = rand(rng)
-    accum = P[1]
-    decision = 1
-    while accum < rn
-        decision += 1
-        accum += P[decision]
-    end
-    return decision
+    return soln
 end
 
 function solve_opcsp_feedback(op::OPCSP)
@@ -158,7 +92,8 @@ function solve_opcsp_feedback(op::OPCSP)
                           findfirst(openset, path[end]),
                           findfirst(openset, op.stop),
                           op.distances[openset, openset])
-        mpc_path = solve_op(mean_future)
+        mpc_soln = solve_op(mean_future)
+        mpc_path = build_path(mean_future, mpc_soln)
         choice = openset[mpc_path[2]]
         total_dist += op.distances[path[end], choice]
         push!(path, choice)
@@ -170,5 +105,6 @@ end
 
 function cheat(op::OPCSP)
     complete_knowledge = SimpleOP(op.r+op.d, op.positions, op.distance_limit, op.start, op.stop)
-    return solve_op(complete_knowledge)
+    soln = solve_op(complete_knowledge)
+    return build_path(op, soln)
 end

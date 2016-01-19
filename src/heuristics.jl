@@ -1,6 +1,5 @@
 # SVNS
 
-
 # local search
 # find best neighbor
 # strategy: modify and unmodify plans in place

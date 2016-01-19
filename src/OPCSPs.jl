@@ -12,10 +12,12 @@ using OPCSPs.MVNTools
 
 export MVNTools
 
-export OPCSP,
+export OrienteeringProblem,
+       OPCSP,
        SimpleOP,
        SolveMeanFeedback,
-       OPCSPUpdater
+       OPCSPUpdater,
+       OPSolution
 
 export solve_op,
        solve_opcsp_feedback,
@@ -25,7 +27,9 @@ export solve_op,
        gen_two_cluster_problem,
        gen_problem,
        updater,
-       reward
+       reward,
+       distance
+
 
 abstract OrienteeringProblem <: POMDP
 
@@ -61,7 +65,6 @@ function OPCSP(r, d, positions, covariance, distance_limit=1.0, start=1, stop=-1
     return OPCSP(r, d, positions, covariance, distance_limit, start, stop, find_distances(positions))
 end
 reward(op::OPCSP, path::Vector{Int}) = sum([op.r[i]+op.d[i] for i in path])
-length(op::OrienteeringProblem) = length(op.r)
 
 include("pomdp.jl")
 include("problems.jl")
