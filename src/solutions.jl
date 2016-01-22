@@ -7,8 +7,10 @@ type OPSolution
 end
 OPSolution() = OPSolution(nothing,nothing)
 
-function build_path(op::OrienteeringProblem, s::OPSolution)
-    xopt = round(Int,s.x)
+build_path(op, s::OPSolution) = build_path(op, s.x)
+
+function build_path(op, x)
+    xopt = round(Int,x)
     path = [op.start]
     current = -1
     dist_sum = 0.0
@@ -16,7 +18,7 @@ function build_path(op::OrienteeringProblem, s::OPSolution)
         if current==-1
             current=op.start
         end
-        current = findfirst(s.x[current,:])
+        current = findfirst(xopt[current,:])
         push!(path, current)
     end
     return path
@@ -24,11 +26,11 @@ end
 
 #=
 function next_guess(soln::OPSolution, i)
-    
+
 end
 =#
 
-function solve_op(op::OrienteeringProblem; output=0, initial::OPSolution=OPSolution())
+function solve_op(op; output=0, initial::OPSolution=OPSolution())
     m = Model(solver=Gurobi.GurobiSolver(OutputFlag=output))
     N = length(op)
 
@@ -72,20 +74,19 @@ function solve_op(op::OrienteeringProblem; output=0, initial::OPSolution=OPSolut
     soln = OPSolution(getValue(x), getValue(u))
 
     if distance(op,build_path(op,soln)) > op.distance_limit
-        warn("Path Length: $(distance(op,path)), Limit: $(op.distance_limit)")
+        warn("Path Length: $(distance(op,build_path(op,soln))), Limit: $(op.distance_limit)")
     end
     return soln
 end
 
-function solve_opcsp_feedback(op::OPCSP)
+function solve_opcsp_feedback(op::OPCSP, d::Vector{Float64})
     d_belief = MVN(zeros(length(op)), copy(op.covariance))
     openset = collect(1:length(op))
     total_dist = 0.0
     choice = -1
     path = [op.start]
-    apply_measurement!(d_belief, op.start, op.d[op.start])
+    apply_measurement!(d_belief, op.start, d[op.start])
     while choice != op.stop
-        # @show 1/length(openset)*sum(abs(d_belief.mean - op.d))
         mean_future = SimpleOP(op.r[openset] + d_belief.mean[openset],
                           [],
                           op.distance_limit-total_dist,
@@ -98,13 +99,13 @@ function solve_opcsp_feedback(op::OPCSP)
         total_dist += op.distances[path[end], choice]
         push!(path, choice)
         splice!(openset, mpc_path[1])
-        apply_measurement!(d_belief, choice, op.d[choice])
+        apply_measurement!(d_belief, choice, d[choice])
     end
     return path
 end
 
-function cheat(op::OPCSP)
-    complete_knowledge = SimpleOP(op.r+op.d, op.positions, op.distance_limit, op.start, op.stop)
+function cheat(op::OPCSP, d::Vector{Float64})
+    complete_knowledge = SimpleOP(op.r+d, op.positions, op.distance_limit, op.start, op.stop)
     soln = solve_op(complete_knowledge)
     return build_path(op, soln)
 end

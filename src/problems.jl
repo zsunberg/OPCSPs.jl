@@ -1,7 +1,7 @@
-function gen_opcsp(r, positions, covariance, distance_limit=1.0, start=1, stop=-1; rng=nothing)
-    d = rand!(rng, Array(Float64, length(r)), MVN(zeros(length(r)), covariance))
-    return OPCSP(r, d, positions, covariance, distance_limit, start, stop)
-end
+# function gen_opcsp(r, positions, covariance, distance_limit=1.0, start=1, stop=-1; rng=nothing)
+#     d = rand!(rng, Array(Float64, length(r)), MVN(zeros(length(r)), covariance))
+#     return OPCSP(r, d, positions, covariance, distance_limit, start, stop)
+# end
 
 function gen_op(;distance_limit=3.0,
                  n_nodes=10,
@@ -16,7 +16,7 @@ function gen_op(;distance_limit=3.0,
                     positions,
                     distance_limit,
                     1,
-                    -1)
+                    n_nodes)
 end
 
 function gen_two_cluster_problem(;distance_limit=6.0,
@@ -62,24 +62,11 @@ function gen_two_cluster_problem(;distance_limit=6.0,
     end
     covariance = covariance.*(noise^2/(det(covariance)^(1/n_nodes))) 
 
-    # A = rand(n_nodes, n_nodes)
-    # covariance = A*A'
-    # for i in 1:n_nodes
-    #     for j in i+1:n_nodes
-    #         if rand(rng) > p
-    #             # if there is a connection, uniformly select the corellation
-    #             covariance[i,j] = covariance[j,i] = 0.0
-    #         end
-    #     end
-    # end
-    # covariance = covariance./(det(covariance)^(1/n_nodes)) # noise is on the order of 1
-
     @assert isposdef(covariance)
     @assert norm(positions[1]-positions[n_nodes]) <= distance_limit
 
     r = 5.0*rand(rng, n_nodes) + 5
-    # r = 10*ones(n_nodes)
-    return gen_opcsp(r, positions, covariance, distance_limit, 1, n_nodes, rng=rng)
+    return OPCSP(r, positions, covariance, distance_limit, 1, n_nodes, rng=rng)
 end
 
 
@@ -126,5 +113,5 @@ function gen_problem(;distance_limit=3.0,
 
     r = 5.0*rand(rng, n_nodes) + 5
     # r = 10*ones(n_nodes)
-    return gen_opcsp(r, positions, covariance, distance_limit, 1, n_nodes, rng=rng)
+    return OPCSP(r, positions, covariance, distance_limit, 1, n_nodes)
 end

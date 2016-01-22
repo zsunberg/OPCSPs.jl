@@ -1,11 +1,11 @@
 type OPCSPState <: State
     i::Int
     open::IntSet # unvisited
-    mu::Vector{Float64}
-    d_remaining::Float64
+    d::Vector{Float64}
+    remaining::Float64
 end
-==(u::OPCSPState, v::OPCSPState) = u.i==v.i && u.v==v.v && u.mu==v.mu && u.d_remaining==v.d_remaining
-hash(s::OPCSPState) = hash(s.i, hash(s.v, hash(s.mu, hash(s.d_remaining))))
+==(u::OPCSPState, v::OPCSPState) = u.i==v.i && u.v==v.v && u.d==v.d && u.remaining==v.remaining
+hash(s::OPCSPState) = hash(s.i, hash(s.v, hash(s.d, hash(s.remaining))))
 create_transition_distribution(problem::OPCSP) = OPCSPState(0, IntSet(), Array(Float64, length(problem)), 0.0)
 create_state(op::OPCSP) = OPCSPState(0, IntSet(), Array(Float64, length(op)), 0.0)
 
@@ -29,14 +29,14 @@ create_observation(::OPCSP) = OPCSPObs()
 type OPCSPDistribution <: Belief
     i::Int
     open::IntSet # unvisited
-    d_remaining::Float64
+    remaining::Float64
     dist::MVN
 end
 function rand!(rng::AbstractRNG, s::OPCSPState, d::OPCSPDistribution)
     s.i = d.i
     copy!(s.open, d.open)
-    rand!(rng, s.mu, d.dist, robust=true)
-    s.d_remaining = d.d_remaining
+    rand!(rng, s.d, d.dist, robust=true)
+    s.remaining = d.remaining
     return s
 end
 create_belief(problem::OPCSP) = OPCSPDistribution(
@@ -51,7 +51,7 @@ function update(u::OPCSPUpdater, bo::OPCSPDistribution, a::OPCSPAction, o::OPCSP
     bn.i = a.next
     copy!(bn.open, bo.open)
     delete!(bn.open, a.next)
-    bn.d_remaining = bo.d_remaining-u.problem.distances[bo.i, a.next]
+    bn.remaining = bo.remaining-u.problem.distances[bo.i, a.next]
     bn.dist = apply_measurement(bo.dist, a.next, o.d) #XXX creating a copy here seems bad maybe
     return bn
 end
@@ -70,23 +70,23 @@ function transition(problem::OPCSP, s::OPCSPState, a::OPCSPAction, sp::OPCSPStat
     sp.i = a.next
     copy!(sp.open, s.open) # if performance is an issue, then change this to = and move delete! to rand!
     delete!(sp.open, a.next)
-    sp.mu = s.mu
-    sp.d_remaining = s.d_remaining - problem.distances[s.i, a.next]
+    sp.d = s.d
+    sp.remaining = s.remaining - problem.distances[s.i, a.next]
     return sp
 end
 function rand!(::AbstractRNG, s::OPCSPState, sd::OPCSPState)
     s.i = sd.i
     copy!(s.open, sd.open)
-    s.mu = sd.mu
-    s.d_remaining = sd.d_remaining
+    s.d = sd.d
+    s.remaining = sd.remaining
     return s
 end
 
-reward(op::OPCSP, s::OPCSPState, ::OPCSPAction, ::OPCSPState) = op.r[s.i]+op.d[s.i]
+reward(op::OPCSP, s::OPCSPState, ::OPCSPAction, ::OPCSPState) = op.r[s.i]+s.d[s.i]
 discount(op::OPCSP) = 1.0
 
 function observation(op::OPCSP, s::OPCSPState, a::OPCSPAction, sp::OPCSPState, od::OPCSPObs=create_observation_distribution(op))
-    od.d = sp.mu[a.next]
+    od.d = sp.d[a.next]
     return od
 end
 function rand!(rng::AbstractRNG, sample::OPCSPObs, od::OPCSPObs)
@@ -106,15 +106,14 @@ OPCSPActionSpace() = OPCSPActionSpace(Array(Int,0),0)
 Base.start(as::OPCSPActionSpace) = 1
 Base.done(as::OPCSPActionSpace, state) = state > as.len
 Base.next(as::OPCSPActionSpace, state) = (OPCSPAction(as.coll[state]), state+1)
-domain(as::OPCSPActionSpace) = as
+iterator(as::OPCSPActionSpace) = as
 
 function rand!(rng::AbstractRNG, a::OPCSPAction, as::OPCSPActionSpace)
     a.next = rand(rng, as.coll[1:as.len])
     return a
 end
 
-within_range(op::OrienteeringProblem, start, stop, j, dist) = op.distances[start,j] + op.distances[j,stop] <= dist
-
+within_range(op, start, stop, j, dist) = op.distances[start,j] + op.distances[j,stop] <= dist
 
 actions(op::OPCSP) = actions(op, OPCSPDistribution(op.start,
                                                    delete!(IntSet(1:length(op)), op.start),
@@ -129,7 +128,7 @@ function actions(op::OPCSP, b::Union{OPCSPDistribution, OPCSPState}, as::OPCSPAc
                                b.i,
                                op.stop,
                                j,
-                               b.d_remaining),
+                               b.remaining),
                b.open)
     i = 0
     for a in f

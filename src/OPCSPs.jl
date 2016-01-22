@@ -1,7 +1,7 @@
 module OPCSPs
 
 import POMDPs: POMDP, State, Action, Observation, Belief, BeliefUpdater, AbstractSpace, Policy
-import POMDPs: rand!, actions, updater, initial_belief, domain, isterminal
+import POMDPs: rand!, actions, updater, initial_belief, iterator, isterminal
 import POMDPs: transition, observation, action, reward, update, discount
 import POMDPs: create_state, create_observation, create_action, create_belief
 import POMDPs: create_observation_distribution, create_transition_distribution
@@ -12,12 +12,12 @@ using OPCSPs.MVNTools
 
 export MVNTools
 
-export OrienteeringProblem,
-       OPCSP,
+export OPCSP,
        SimpleOP,
        SolveMeanFeedback,
        OPCSPUpdater,
-       OPSolution
+       OPSolution,
+       OPCSPState
 
 export solve_op,
        solve_opcsp_feedback,
@@ -28,12 +28,11 @@ export solve_op,
        gen_problem,
        updater,
        reward,
-       distance
+       distance,
+       build_path
 
 
-abstract OrienteeringProblem <: POMDP
-
-type SimpleOP <: OrienteeringProblem
+type SimpleOP
     r::Vector{Float64}
     positions::Vector{Vector{Float64}}
     distance_limit::Float64
@@ -47,10 +46,11 @@ function SimpleOP(r, positions, distance_limit=1.0, start=1, stop=-1)
     end
     return SimpleOP(r, positions, distance_limit, start, stop, find_distances(positions))
 end
+reward(op::SimpleOP, path::Vector{Int}) = sum([op.r[i] for i in path])
 
-type OPCSP <: OrienteeringProblem
-    r::Vector{Float64}
-    d::Vector{Float64}
+type OPCSP <: POMDP
+    r::Vector{Float64} # r bar
+    # d::Vector{Float64}
     positions::Vector{Vector{Float64}}
     covariance::Matrix{Float64}
     distance_limit::Float64
@@ -58,13 +58,19 @@ type OPCSP <: OrienteeringProblem
     stop::Int
     distances::Matrix{Float64}
 end
-function OPCSP(r, d, positions, covariance, distance_limit=1.0, start=1, stop=-1)
+function OPCSP(r, positions, covariance, distance_limit=1.0, start=1, stop=-1)
     if stop == -1
         stop = start
     end
-    return OPCSP(r, d, positions, covariance, distance_limit, start, stop, find_distances(positions))
+    return OPCSP(r, positions, covariance, distance_limit, start, stop, find_distances(positions))
 end
-reward(op::OPCSP, path::Vector{Int}) = sum([op.r[i]+op.d[i] for i in path])
+reward(op::OPCSP, d::Vector{Float64}, path::Vector{Int}) = sum(op.r[path] + d[path])
+
+# type OPCSPRealization
+#     csp::OPCSP
+#     d::Vector{Float64}
+# end
+# initial_state(opr::OPCSPRealization) = OPCSPState(opr.csp
 
 include("pomdp.jl")
 include("problems.jl")
