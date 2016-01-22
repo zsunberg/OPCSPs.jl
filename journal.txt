@@ -1,0 +1,81 @@
+Tue 19 Jan 2016 10:52:43 AM PST
+
+How badly does it affect the simulations to use an open-loop value estimate rather than a feedback rollout?
+
+[ ]
+
+
+Mon 18 Jan 2016 08:39:30 PM PST
+
+Tried hotstarting through JuMP. Seemed like performance was the same as giving it the answer
+So, hotstarting does seem to help, but doesn't immediately give the answer
+
+Next we need to test the Leifer model
+
+Fri 15 Jan 2016 01:00:08 PM PST
+
+[ ] implement and test Leifer MILP
+[ ] value of information
+[ ] implement Leifer upper bound LP
+
+Mon 11 Jan 2016 09:56:55 PM PST
+
+[ ] Offline MCTS
+[ ] Offline genetic/ant-colony heuristic
+
+Sat 09 Jan 2016 01:33:26 PM PST
+
+[O] Implement single step heuristic
+[ ] Implement Chao's heuristic inefficiently
+
+Fri 01 Jan 2016 04:02:33 PM PST
+
+[X] Solve this tomorrow (first use a HistoryRecorder with max steps to see what's going on)
+the offending problem is gen_two_cluster_problem(noise=1.0, p=0.1, n_nodes=10, rng=MersenneTwister(32))
+
+even with only 1 thread, memory fills up with N=100
+with addprocs(3) still fills up memory
+
+Fri 01 Jan 2016 02:14:09 PM PST
+
+blocks don't seem to solve the memory problem :(
+
+[/] Figure out this error: (this probably had to do with the findfirst thing)
+    ERROR (unhandled task failure): On worker 6:
+    BoundsError: attempt to access 6x6 Array{Float64,2}:
+     0.0  1.0  -9.62191e-7  0.0  0.0  0.0
+     0.0  0.0   9.63028e-7  1.0  0.0  0.0
+     0.0  0.0   0.0         0.0  0.0  0.0
+     0.0  0.0   0.0         0.0  1.0  0.0
+     0.0  0.0   0.0         0.0  0.0  1.0
+     0.0  0.0   0.0         0.0  0.0  0.0
+      at index [0,Colon()]
+     in throw_boundserror at abstractarray.jl:156
+     in solve_op at /home/zach/.julia/OPCSPs/src/solutions.jl:52
+     in action at /home/zach/.julia/OPCSPs/src/rollouts.jl:22
+     in simulate at /home/zach/.julia/POMDPToolbox/src/simulators.jl:59
+     in rollout at /home/zach/.julia/POMCP/src/solver.jl:139
+     in simulate at /home/zach/.julia/POMCP/src/solver.jl:79
+     in simulate at /home/zach/.julia/POMCP/src/solver.jl:120
+     in search at /home/zach/.julia/POMCP/src/solver.jl:48
+     in action at /home/zach/.julia/POMCP/src/solver.jl:16
+     in simulate at /home/zach/.julia/POMDPToolbox/src/simulators.jl:59
+
+Fri 01 Jan 2016 01:38:11 PM PST
+
+[ ]WHY IS MCTS BEATING cheat on average sometimes ???
+
+Fri 01 Jan 2016 10:30:05 AM PST
+
+[ ] profile
+N=10: 3354 MB
+N=50: Too much
+random
+N=100: 4129
+N=20: 4300
+
+Thu 19 Nov 2015 10:57:54 AM PST
+
+[X] test exact solvers
+[X] adapt to pomdps
+[ ] run tests that were in the paper
