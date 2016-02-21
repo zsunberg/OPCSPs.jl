@@ -1,12 +1,13 @@
 module MVNTools
 
 import POMDPs
-import POMDPs.rand!
+import Base: rand, rand!
+using AutoHashEquals
 
-export MVN, apply_measurement!, apply_measurement
+export MVN, apply_measurement!, apply_measurement, rand_elem
 
 # Multivariate Normal Distribution
-type MVN <: POMDPs.AbstractDistribution
+@auto_hash_equals type MVN <: POMDPs.AbstractDistribution
     mean::Vector{Float64}
     covariance::Array{Float64,2}
 end
@@ -76,5 +77,15 @@ function rand!(rng::AbstractRNG, sample::Vector{Float64}, d::MVN; robust=false)
     sample[:] = d.mean + delta
     return sample
 end
+
+# returns a single element of a random sample
+function rand_elem(rng::AbstractRNG, d::MVN, elem::Int; robust=false)
+    return d.mean[elem] + sqrt(d.covariance[elem, elem])*randn(rng)
+end
+
+#= this should be taken care of by auto hash equals
+==(u::MVN, v::MVN) = u.mean==v.mean && u.covariance==v.covariance
+hash(u::MVN, h::Int) = hash(u.mean, hash(u.covariance, h))
+=#
 
 end

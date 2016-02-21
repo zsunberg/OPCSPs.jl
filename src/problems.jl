@@ -3,7 +3,7 @@
 #     return OPCSP(r, d, positions, covariance, distance_limit, start, stop)
 # end
 
-function gen_op(;distance_limit=3.0,
+function gen_op(;distance_limit=1.5,
                  n_nodes=10,
                  rng=MersenneTwister())
 
@@ -66,11 +66,11 @@ function gen_two_cluster_problem(;distance_limit=6.0,
     @assert norm(positions[1]-positions[n_nodes]) <= distance_limit
 
     r = 5.0*rand(rng, n_nodes) + 5
-    return OPCSP(r, positions, covariance, distance_limit, 1, n_nodes, rng=rng)
+    return OPCSP(r, positions, covariance, distance_limit, 1, n_nodes)
 end
 
 
-function gen_problem(;distance_limit=3.0,
+function gen_problem(;distance_limit=sqrt(2),
                       n_nodes=10,
                       p=0.4, # probability of connection
                       rng=MersenneTwister(),
@@ -111,7 +111,8 @@ function gen_problem(;distance_limit=3.0,
     @assert isposdef(covariance)
     @assert norm(positions[1]-positions[n_nodes]) <= distance_limit
 
-    r = 5.0*rand(rng, n_nodes) + 5
-    # r = 10*ones(n_nodes)
+    # r = 5.0*rand(rng, n_nodes) + 5
+    # r = 10.0*rand(rng, n_nodes)
+    r = 10*ones(n_nodes)
     return OPCSP(r, positions, covariance, distance_limit, 1, n_nodes)
 end

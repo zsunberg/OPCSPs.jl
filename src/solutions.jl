@@ -1,6 +1,14 @@
 using JuMP
 using Gurobi
 
+abstract OPSolver
+
+type GurobiExactSolver <: OPSolver end
+
+function first_move(solver::OPSolver, op::SimpleOP)
+    return solve_op(solver, op)[2]
+end
+
 type OPSolution
     x
     u
@@ -24,13 +32,14 @@ function build_path(op, x)
     return path
 end
 
-#=
-function next_guess(soln::OPSolution, i)
-
+function solve_op(solver::GurobiExactSolver, op)
+    path = build_path(op, gurobi_solve(op))
+    @assert distance(op, path) <= op.distance_limit
+    return path
 end
-=#
 
-function solve_op(op; output=0, initial::OPSolution=OPSolution())
+
+function gurobi_solve(op; output=0, initial::OPSolution=OPSolution())
     m = Model(solver=Gurobi.GurobiSolver(OutputFlag=output))
     N = length(op)
 
@@ -79,7 +88,7 @@ function solve_op(op; output=0, initial::OPSolution=OPSolution())
     return soln
 end
 
-function solve_opcsp_feedback(op::OPCSP, d::Vector{Float64})
+function solve_opcsp_feedback(op, d::Vector{Float64}, solver=GurobiExactSolver())
     d_belief = MVN(zeros(length(op)), copy(op.covariance))
     openset = collect(1:length(op))
     total_dist = 0.0
@@ -93,8 +102,9 @@ function solve_opcsp_feedback(op::OPCSP, d::Vector{Float64})
                           findfirst(openset, path[end]),
                           findfirst(openset, op.stop),
                           op.distances[openset, openset])
-        mpc_soln = solve_op(mean_future)
-        mpc_path = build_path(mean_future, mpc_soln)
+        # mpc_soln = gurobi_solve(mean_future)
+        # mpc_path = build_path(mean_future, mpc_soln)
+        mpc_path = solve_op(solver, mean_future)
         choice = openset[mpc_path[2]]
         total_dist += op.distances[path[end], choice]
         push!(path, choice)
@@ -104,8 +114,8 @@ function solve_opcsp_feedback(op::OPCSP, d::Vector{Float64})
     return path
 end
 
-function cheat(op::OPCSP, d::Vector{Float64})
+function cheat(op, d::Vector{Float64})
     complete_knowledge = SimpleOP(op.r+d, op.positions, op.distance_limit, op.start, op.stop)
-    soln = solve_op(complete_knowledge)
+    soln = gurobi_solve(complete_knowledge)
     return build_path(op, soln)
 end

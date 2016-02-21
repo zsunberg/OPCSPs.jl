@@ -1,24 +1,25 @@
-type OPCSPState <: State
+@auto_hash_equals type OPCSPState <: State
     i::Int
     open::IntSet # unvisited
     d::Vector{Float64}
     remaining::Float64
 end
-==(u::OPCSPState, v::OPCSPState) = u.i==v.i && u.v==v.v && u.d==v.d && u.remaining==v.remaining
-hash(s::OPCSPState) = hash(s.i, hash(s.v, hash(s.d, hash(s.remaining))))
+# ==(u::OPCSPState, v::OPCSPState) = u.i==v.i && u.v==v.v && u.d==v.d && u.remaining==v.remaining
+# ==(u::OPCSPState, v::OPCSPState) = error("== is being used for a state") # want to see if this is being used
+# hash(s::OPCSPState) = hash(s.i, hash(s.v, hash(s.d, hash(s.remaining))))
 create_transition_distribution(problem::OPCSP) = OPCSPState(0, IntSet(), Array(Float64, length(problem)), 0.0)
 create_state(op::OPCSP) = OPCSPState(0, IntSet(), Array(Float64, length(op)), 0.0)
 
-type OPCSPAction <: Action
+@auto_hash_equals type OPCSPAction <: Action
     next::Int
     OPCSPAction() = new()
     OPCSPAction(i::Int) = new(i)
 end
-==(u::OPCSPAction, v::OPCSPAction) = u.next==v.next
-hash(a::OPCSPAction) = hash(a.next)
+# ==(u::OPCSPAction, v::OPCSPAction) = u.next==v.next
+# hash(a::OPCSPAction) = hash(a.next)
 create_action(::OPCSP) = OPCSPAction()
 
-type OPCSPObs <: Observation
+@auto_hash_equals type OPCSPObs <: Observation
     d::Float64
     OPCSPObs() = new()
     OPCSPObs(d::Float64) = new(d)
@@ -95,48 +96,3 @@ function rand!(rng::AbstractRNG, sample::OPCSPObs, od::OPCSPObs)
 end
 isterminal(op::OPCSP, s::OPCSPState) = op.stop == s.i
 discount(op::OPCSP) = 1.0
-
-type OPCSPActionSpace <: AbstractSpace
-    coll::Array{Int} # this may be larger than the actual action space to avoid reallocations - make sure to use len
-    len::Int
-end
-length(as::OPCSPActionSpace) = as.len
-OPCSPActionSpace() = OPCSPActionSpace(Array(Int,0),0)
-## iteration ##
-Base.start(as::OPCSPActionSpace) = 1
-Base.done(as::OPCSPActionSpace, state) = state > as.len
-Base.next(as::OPCSPActionSpace, state) = (OPCSPAction(as.coll[state]), state+1)
-iterator(as::OPCSPActionSpace) = as
-
-function rand!(rng::AbstractRNG, a::OPCSPAction, as::OPCSPActionSpace)
-    a.next = rand(rng, as.coll[1:as.len])
-    return a
-end
-
-within_range(op, start, stop, j, dist) = op.distances[start,j] + op.distances[j,stop] <= dist
-
-actions(op::OPCSP) = actions(op, OPCSPDistribution(op.start,
-                                                   delete!(IntSet(1:length(op)), op.start),
-                                                   op.distance_limit,
-                                                   MVN(zeros(0),ones(0,0))))
-
-function actions(op::OPCSP, b::Union{OPCSPDistribution, OPCSPState}, as::OPCSPActionSpace=OPCSPActionSpace())
-    if length(as.coll) < length(op)
-        resize!(as.coll, length(op))
-    end
-    f = filter(j->within_range(op,
-                               b.i,
-                               op.stop,
-                               j,
-                               b.remaining),
-               b.open)
-    i = 0
-    for a in f
-        i += 1
-        @inbounds as.coll[i] = a
-    end
-    as.len = i
-    return as
-end
-
-### performance may be better with a BitArray of the right length instead of an IntSet

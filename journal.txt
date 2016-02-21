@@ -1,9 +1,137 @@
+Wed 17 Feb 2016 04:53:10 PM PST
+
+[ ] aggregate states for which the L1 norm is small
+
+Wed 17 Feb 2016 01:13:11 PM PST
+
+[ ] streamline testing
+[ ] try some heuristics (stefan's)
+[ ] look at histograms
+
+Tue 16 Feb 2016 07:48:54 PM PST
+
+Dang... Now what?
+try different problem classes?
+cluster close states?
+let MCTS go?
+
+Tue 16 Feb 2016 07:47:00 PM PST
+
+        solver = DPWSolver(
+            rollout_solver=SolveMeanFeedback(p, HeuristicSolver()),
+            action_generator=PreSolvedActionGenerator(p,rng=srng),
+            exploration_constant=sum(p.r),
+            n_iterations=10000,
+            rng=srng,
+            k_action = 5.0,
+            alpha_action = 0.2,
+            k_state = 3.0,
+            alpha_state = 0.2
+        )
+        177 seconds
+naive_scores Out[8]: 1-element Array{Float64,1}: 63.6729
+mcts_scores Out[9]: 1-element Array{Float64,1}: 59.7604
+feedback_scores Out[10]: 1-element Array{Float64,1}: 64.3322
+
+Tue 16 Feb 2016 05:51:31 PM PST
+
+        solver = DPWSolver(
+            rollout_solver=SolveMeanFeedback(p, GurobiExactSolver()),
+            action_generator=PreSolvedActionGenerator(p,rng=srng),
+            exploration_constant=sum(p.r),
+            n_iterations=50,
+            rng=srng,
+            k_action = 5.0,
+            alpha_action = 0.2,
+            k_state = 3.0,
+            alpha_state = 0.2
+        )
+128 seconds
+naive_scores Out[4]: 1-element Array{Float64,1}: 63.6729
+mcts_scores Out[5]: 1-element Array{Float64,1}: 63.059
+feedback_scores Out[6]: 1-element Array{Float64,1}: 64.3322
+
+Tue 16 Feb 2016 05:50:22 PM PST
+
+        solver = DPWSolver(
+            rollout_solver=SolveMeanFeedback(p, GurobiExactSolver()),
+            action_generator=HeuristicActionGenerator(HeuristicSolver(),srng,actions(p)),
+            exploration_constant=sum(p.r),
+            n_iterations=50,
+            rng=srng,
+            k_action = 5.0,
+            alpha_action = 0.2,
+            k_state = 3.0,
+            alpha_state = 0.2
+        )
+55 seconds
+In [5]: naive_scores Out[5]: 1-element Array{Float64,1}: 63.6729
+In [6]: mcts_scores Out[6]: 1-element Array{Float64,1}: 62.6014
+In [7]: feedback_scores Out[7]: 1-element Array{Float64,1}: 64.3322 
+woo
+
+Tue 16 Feb 2016 05:43:48 PM PST
+
+changed sim rng
+
+Tue 16 Feb 2016 04:51:53 PM PST
+
+[ ] make better action generator
+[ ] take a break
+
+Tue 16 Feb 2016 04:39:14 PM PST
+
+50 gurobi
+45.75 seconds
+naive_scores Out[5]: 1-element Array{Float64,1}: 63.6729
+mcts_scores Out[6]: 1-element Array{Float64,1}: 60.7881
+feedback_scores Out[7]: 1-element Array{Float64,1}: 64.3322
+
+10k heuristic
+71 seconds?
+naive_scores Out[15]: 1-element Array{Float64,1}: 63.6729
+mcts_scores Out[16]: 1-element Array{Float64,1}: 61.6935
+feedback_scores Out[17]: 1-element Array{Float64,1}: 64.3322
+
+Fri 12 Feb 2016 12:47:08 PM PST
+
+[X] improve visualization
+
+Fri 12 Feb 2016 12:07:49 AM PST
+
+mcts works - visualizing tree
+[X] choose actions in a smart way
+
+Thu 04 Feb 2016 05:36:28 PM PST
+
+[ ] Read two stage approach to...
+[ ] read about c-a heuristic in Tang & Miller-Hooks
+
+Tue 02 Feb 2016 01:01:46 PM PST
+
+[ ] test MCTS and make sure it works (it doesn't now)
+
+Mon 01 Feb 2016 06:53:53 PM PST
+
+[X] why choosing infeasible actions
+
+Mon 01 Feb 2016 05:21:41 PM PST
+
+Eventually:
+[ ] Profile MCTS Code
+
+Mon 01 Feb 2016 04:23:24 PM PST
+
+[X] implement general way to convert to SimpleOP
+[X] implement heuristic as policy
+[ ] compare MCTS performance
+[ ] commit MCTS stuff
+
 Tue 19 Jan 2016 10:52:43 AM PST
 
 How badly does it affect the simulations to use an open-loop value estimate rather than a feedback rollout?
 
 [ ]
-
 
 Mon 18 Jan 2016 08:39:30 PM PST
 

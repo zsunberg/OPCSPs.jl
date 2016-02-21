@@ -1,23 +1,35 @@
 module OPCSPs
 
 import POMDPs: POMDP, State, Action, Observation, Belief, BeliefUpdater, AbstractSpace, Policy
-import POMDPs: rand!, actions, updater, initial_belief, iterator, isterminal
+import POMDPs: rand, actions, updater, initial_belief, iterator, isterminal
+import POMDPs: rand! # TODO this shouldn't be necessary, but it is here to ease transition
 import POMDPs: transition, observation, action, reward, update, discount
 import POMDPs: create_state, create_observation, create_action, create_belief
 import POMDPs: create_observation_distribution, create_transition_distribution
 import Base: ==, hash, length
 
+import MCTS
+
 include("MVNTools.jl")
 using OPCSPs.MVNTools
+using AutoHashEquals
 
 export MVNTools
 
 export OPCSP,
        SimpleOP,
+       OPCSPBeliefMDP,
        SolveMeanFeedback,
        OPCSPUpdater,
        OPSolution,
-       OPCSPState
+       OPCSPState,
+       OPCSPAction,
+       OPCSPBelief,
+       HeuristicSolver,
+       GurobiExactSolver,
+       HeuristicActionGenerator,
+       PreSolvedActionGenerator,
+       MCTSAdapter
 
 export solve_op,
        solve_opcsp_feedback,
@@ -29,7 +41,10 @@ export solve_op,
        updater,
        reward,
        distance,
-       build_path
+       build_path,
+       within_range,
+       initial_state,
+       gurobi_solve
 
 
 type SimpleOP
@@ -64,19 +79,18 @@ function OPCSP(r, positions, covariance, distance_limit=1.0, start=1, stop=-1)
     end
     return OPCSP(r, positions, covariance, distance_limit, start, stop, find_distances(positions))
 end
-reward(op::OPCSP, d::Vector{Float64}, path::Vector{Int}) = sum(op.r[path] + d[path])
-
-# type OPCSPRealization
-#     csp::OPCSP
-#     d::Vector{Float64}
-# end
-# initial_state(opr::OPCSPRealization) = OPCSPState(opr.csp
+reward(op, d::Vector{Float64}, path::Vector{Int}) = sum(op.r[path] + d[path])
 
 include("pomdp.jl")
+include("mdp.jl")
+include("action_space.jl")
 include("problems.jl")
 include("util.jl")
 include("solutions.jl")
 include("rollouts.jl")
+include("heuristics.jl")
+include("policies.jl")
+include("mcts.jl")
 include("visualization.jl")
 
 end # module

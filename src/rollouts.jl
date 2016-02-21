@@ -2,32 +2,6 @@
 
 import POMCP
 
-## Best feedback policy
-type SolveMeanFeedback <: Policy
-    problem::OPCSP
-end
-updater(p::SolveMeanFeedback) = OPCSPUpdater(p.problem)
-
-# PERF: use logical indexing
-function action(p::SolveMeanFeedback, b::OPCSPDistribution, act::OPCSPAction=OPCSPAction(0))
-    openset = cat(1, b.i, collect(b.open))
-    mean_op = SimpleOP(p.problem.r[openset]+b.dist.mean[openset],
-                       [],
-                       b.remaining,
-                       1,
-                       findfirst(openset, p.problem.stop),
-                       p.problem.distances[openset, openset])
-    # if any(isnan(mean_op.r))
-    #     println(openset)
-    #     println(p.problem.r)
-    #     println(b.dist.mean)
-    # end
-    soln = solve_op(mean_op)
-    path = build_path(mean_op, soln)
-    act.next = openset[path[2]]
-    return act
-end
-
 ## Open Loop
 
 # # maybe I'll finish this later, but it doesn't seem that necessary for now
