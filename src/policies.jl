@@ -5,6 +5,10 @@ type SolveMeanFeedback <: Policy
     solver::OPSolver
 end
 updater(p::SolveMeanFeedback) = OPCSPUpdater(p.problem)
+type FeedbackSolver <: Solver
+    solver::OPSolver
+end
+POMDPs.solve(s::FeedbackSolver, p::Union{OPCSP, OPCSPBeliefMDP}) = SolveMeanFeedback(p, s.solver)
 
 type SubsetOP
     included_nodes::Vector{Int}

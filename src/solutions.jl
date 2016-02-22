@@ -74,7 +74,7 @@ function gurobi_solve(op; output=0, initial::OPSolution=OPSolution())
         @addConstraint(m, sum{x[op.stop,i],i=1:N} == 0)
     end
 
-    status = solve(m)
+    status = JuMP.solve(m)
 
     if status != :Optimal
         warn("Not solved to optimality:\n$op")

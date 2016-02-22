@@ -1,14 +1,17 @@
 module OPCSPs
 
-import POMDPs: POMDP, State, Action, Observation, Belief, BeliefUpdater, AbstractSpace, Policy
+import POMDPs: POMDP, State, Action, Observation, Belief, BeliefUpdater, AbstractSpace, Policy, Solver
 import POMDPs: rand, actions, updater, initial_belief, iterator, isterminal
 import POMDPs: rand! # TODO this shouldn't be necessary, but it is here to ease transition
 import POMDPs: transition, observation, action, reward, update, discount
 import POMDPs: create_state, create_observation, create_action, create_belief
 import POMDPs: create_observation_distribution, create_transition_distribution
+using POMDPs
 import Base: ==, hash, length
 
 import MCTS
+
+import POMDPToolbox
 
 include("MVNTools.jl")
 using OPCSPs.MVNTools
@@ -20,6 +23,7 @@ export OPCSP,
        SimpleOP,
        OPCSPBeliefMDP,
        SolveMeanFeedback,
+       FeedbackSolver,
        OPCSPUpdater,
        OPSolution,
        OPCSPState,
@@ -44,7 +48,10 @@ export solve_op,
        build_path,
        within_range,
        initial_state,
-       gurobi_solve
+       gurobi_solve,
+       evaluate_performance,
+       test_run,
+       initial_states
 
 
 type SimpleOP
@@ -91,6 +98,7 @@ include("rollouts.jl")
 include("heuristics.jl")
 include("policies.jl")
 include("mcts.jl")
+include("evaluation.jl")
 include("visualization.jl")
 
 end # module
