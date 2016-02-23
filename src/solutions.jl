@@ -38,7 +38,6 @@ function solve_op(solver::GurobiExactSolver, op)
     return path
 end
 
-
 function gurobi_solve(op; output=0, initial::OPSolution=OPSolution())
     m = Model(solver=Gurobi.GurobiSolver(OutputFlag=output))
     N = length(op)

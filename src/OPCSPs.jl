@@ -33,7 +33,11 @@ export OPCSP,
        GurobiExactSolver,
        HeuristicActionGenerator,
        PreSolvedActionGenerator,
-       MCTSAdapter
+       MCTSAdapter,
+       SampledFeedbackSolver,
+       SolveSampledFeedback,
+       InfluenceBonusFBSolver,
+       SolveInfluenceBonusFB
 
 export solve_op,
        solve_opcsp_feedback,
@@ -52,6 +56,7 @@ export solve_op,
        evaluate_performance,
        test_run,
        initial_states
+
 
 
 type SimpleOP
@@ -98,6 +103,7 @@ include("rollouts.jl")
 include("heuristics.jl")
 include("policies.jl")
 include("mcts.jl")
+include("feedback.jl")
 include("evaluation.jl")
 include("visualization.jl")
 

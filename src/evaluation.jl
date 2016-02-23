@@ -13,7 +13,7 @@ function test_run(p::OPCSP, is::OPCSPState, solver::MCTS.DPWSolver; rng::Abstrac
     simr = simulate(sim, p, policy, OPCSPUpdater(p), initial_belief(p))
     path = Int[s.i for s in sim.state_hist]
     r = reward(p, is.d, path)
-    @assert r == simr + p.r[p.stop] + is.d[p.stop]
+    @assert abs(simr + p.r[p.stop] + is.d[p.stop] - r) < 1e-6
     return r
 end
 
@@ -22,7 +22,7 @@ function test_run(p::OPCSP, is::OPCSPState, policy::Policy; rng::AbstractRNG=Mer
     simr = simulate(sim, p, policy, updater(policy), initial_belief(p))
     path = Int[s.i for s in sim.state_hist]
     r = reward(p, is.d, path)
-    @assert r == simr + p.r[p.stop] + is.d[p.stop]
+    @assert abs(simr + p.r[p.stop] + is.d[p.stop] - r) < 1e-6
     return r
 end
 
@@ -36,11 +36,16 @@ function test_run(p::OPCSP, is::OPCSPState, solver::OPSolver; rng::AbstractRNG=M
     return reward(p, is.d, path)
 end
 
-function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, solver; rng_offset::Int=100)
+function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, solver; rng_offset::Int=100, parallel=true)
     rewards = SharedArray(Float64, length(problems))
-    # @sync @parallel for j in 1:length(problems)
-    for j in 1:length(problems)
-        rewards[j] = test_run(problems[j], iss[j], solver, rng=MersenneTwister(j+rng_offset))
+    if parallel
+        @sync @parallel for j in 1:length(problems)
+            rewards[j] = test_run(problems[j], iss[j], solver, rng=MersenneTwister(j+rng_offset))
+        end
+    else
+        for j in 1:length(problems)
+            rewards[j] = test_run(problems[j], iss[j], solver, rng=MersenneTwister(j+rng_offset))
+        end
     end
     return sdata(rewards)
 end

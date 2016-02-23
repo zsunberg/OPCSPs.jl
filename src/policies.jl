@@ -12,7 +12,7 @@ POMDPs.solve(s::FeedbackSolver, p::Union{OPCSP, OPCSPBeliefMDP}) = SolveMeanFeed
 
 type SubsetOP
     included_nodes::Vector{Int}
-    op::SimpleOP
+    op
 end
 
 # PERF: use logical indexing (?)
