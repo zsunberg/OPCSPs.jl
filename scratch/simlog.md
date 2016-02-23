@@ -597,3 +597,132 @@ f = 0.2
 mean(influence) = 63.88413255325014
 
 ```
+# [Feb 23 11:58] influence_bonus.jl
+
+## Input
+```julia
+addprocs(4)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.1,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()))
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f))
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(mean_feedback) = 64.00777834932401
+f = 0.0
+mean(influence) = 64.00777834932401
+f = 0.05
+mean(influence) = 64.08593522108075
+f = 0.1
+mean(influence) = 64.11254118663678
+f = 0.15
+mean(influence) = 64.08577484881282
+f = 0.2
+mean(influence) = 64.03722505754851
+
+```
+# [Feb 23 12:02] influence_bonus.jl
+
+## Input
+```julia
+addprocs(4)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.1,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(mean_feedback) = 64.00777834932401
+f = 0.0
+mean(influence) = 64.00777834932401
+f = 0.05
+mean(influence) = 64.08593522108075
+f = 0.1
+mean(influence) = 64.11254118663678
+f = 0.15
+mean(influence) = 64.08577484881282
+f = 0.2
+mean(influence) = 64.03722505754851
+
+```
+# [Feb 23 12:08] influence_bonus.jl
+
+## Input
+```julia
+addprocs(4)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.1,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=2000)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(mean_feedback) = 62.904487700790405
+f = 0.0
+mean(influence) = 62.904487700790405
+f = 0.05
+mean(influence) = 63.0946353608152
+f = 0.1
+mean(influence) = 62.9644825864082
+f = 0.15
+mean(influence) = 62.89574783136595
+f = 0.2
+mean(influence) = 62.89472891189719
+
+```

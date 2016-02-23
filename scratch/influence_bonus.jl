@@ -10,13 +10,13 @@ problems = [gen_problem(noise=5.0,
                         rng=MersenneTwister(i))
             for i in 1:N]
 
-iss = initial_states(problems)
+iss = initial_states(problems, rng_offset=2000)
 
-mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()))
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
 @show mean(mean_feedback)
 
 for f in 0.0:0.05:0.2 
     @show f
-    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f))
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
     @show mean(influence)
 end
