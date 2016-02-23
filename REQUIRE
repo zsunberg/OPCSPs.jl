@@ -3,3 +3,5 @@ JuMP
 Gurobi
 Mustache
 DataFrames
+AutoHashEquals
+ArgParse
