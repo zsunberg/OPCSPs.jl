@@ -58,4 +58,26 @@ function MCTS.next_action(gen::PreSolvedActionGenerator, mdp::OPCSPBeliefMDP, s:
     return move
 end
 
+type OPCSPAg <: Aggregator 
+    radius::Float64
+    anchors::Dict{Int,Set{OPCSPBelief}}
+end
+OPCSPAg(radius::Float64) = OPCSPAg(radius, Dict{Int,Set{OPCSPBelief}})
 
+same_besides_profit(u::OPCSPBelief, v::OPCSPBelief) = u.i == v.i && u.remaining == v.remaining && u.open == v.open
+
+function assign(ag::OPCSPAg, b::OPCSPBelief)
+    i_anchors = ag.anchors[b.i]
+    local anch
+    found = false
+    for anch in filter(an->same_besides_profit(an,b), i_anchors)
+        if sum(abs(anch.dist.mean-b.dist.mean)) <= ag.radius
+            found = true
+            break
+        end
+    end
+    if !found
+        return b
+    end
+    return anch
+end

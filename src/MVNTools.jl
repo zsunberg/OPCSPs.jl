@@ -78,6 +78,13 @@ function rand!(rng::AbstractRNG, sample::Vector{Float64}, d::MVN; robust=false)
     return sample
 end
 
+function rand(rng::AbstractRNG, d::MVN)
+    sample = Array(Float64, length(d))
+    rand!(rng, sample, d)
+end
+
+rand(d::MVN) = rand(Base.GLOBAL_RNG, d)
+
 # returns a single element of a random sample
 function rand_elem(rng::AbstractRNG, d::MVN, elem::Int; robust=false)
     return d.mean[elem] + sqrt(d.covariance[elem, elem])*randn(rng)

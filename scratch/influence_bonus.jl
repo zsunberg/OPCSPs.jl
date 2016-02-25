@@ -10,7 +10,7 @@ problems = [gen_problem(noise=5.0,
                         rng=MersenneTwister(i))
             for i in 1:N]
 
-iss = initial_states(problems, rng_offset=2000)
+iss = initial_states(problems, rng_offset=100)
 
 mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
 @show mean(mean_feedback)
