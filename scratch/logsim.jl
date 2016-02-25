@@ -18,6 +18,7 @@ log = "simlog.md" # TODO make arg
 datestring = Dates.format(Dates.now(), "u d HH:MM") # TODO make arg
 
 tmp = tempname()
+script_contents = readall(args["script"])
 run(pipeline(`julia $(args["script"])`, `tee $tmp`)) # TODO make cross platform
 
 logstring = """
@@ -25,7 +26,7 @@ logstring = """
 
 ## Input
 ```julia
-$(readall(args["script"]))
+$script_contents
 ```
 ## Output
 ```

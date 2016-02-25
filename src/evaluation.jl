@@ -36,6 +36,11 @@ function test_run(p::OPCSP, is::OPCSPState, solver::OPSolver; rng::AbstractRNG=M
     return reward(p, is.d, path)
 end
 
+function test_run(p::OPCSP, is::OPCSPState, solver::Cheater; rng::AbstractRNG=MersenneTwister())
+    path = cheat(p, is.d)
+    return reward(p, is.d, path)
+end
+
 function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, solver; rng_offset::Int=100, parallel=true)
     rewards = SharedArray(Float64, length(problems))
     if parallel
