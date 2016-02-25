@@ -726,3 +726,195 @@ f = 0.2
 mean(influence) = 62.89472891189719
 
 ```
+# [Feb 23 12:12] influence_bonus.jl
+
+## Input
+```julia
+addprocs(4)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.1,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=2000)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(mean_feedback) = 62.67320114012829
+f = 0.0
+mean(influence) = 62.67320114012829
+f = 0.05
+mean(influence) = 62.77565669210183
+f = 0.1
+mean(influence) = 62.65221194277069
+f = 0.15
+mean(influence) = 62.61107693112879
+f = 0.2
+mean(influence) = 62.60748759722721
+
+```
+# [Feb 23 12:17] influence_bonus.jl
+
+## Input
+```julia
+addprocs(4)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.1,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=2000)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(naive) = 61.56611865182377
+mean(mean_feedback) = 62.67320114012829
+f = 0.0
+mean(influence) = 62.67320114012829
+f = 0.05
+mean(influence) = 62.77565669210183
+f = 0.1
+mean(influence) = 62.65221194277069
+f = 0.15
+mean(influence) = 62.61107693112879
+f = 0.2
+mean(influence) = 62.60748759722721
+
+```
+# [Feb 23 12:27] influence_bonus.jl
+
+## Input
+```julia
+addprocs(4)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.1,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=2000)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(naive) = 61.56611865182377
+mean(cheating) = 75.68061623654219
+mean(mean_feedback) = 62.67320114012829
+f = 0.0
+mean(influence) = 62.67320114012829
+f = 0.05
+mean(influence) = 62.77565669210183
+f = 0.1
+mean(influence) = 62.65221194277069
+f = 0.15
+mean(influence) = 62.61107693112879
+f = 0.2
+mean(influence) = 62.60748759722721
+
+```
+# [Feb 23 13:17] influence_bonus.jl
+
+## Input
+```julia
+addprocs(8)
+
+using OPCSPs
+
+N = 1000
+
+problems = [gen_problem(noise=5.0,
+                        p=0.3,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=2000)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+for f in 0.0:0.05:0.2 
+    @show f
+    influence = evaluate_performance(problems, iss, InfluenceBonusFBSolver(f), rng_offset=1000)
+    @show mean(influence)
+end
+
+```
+## Output
+```
+mean(naive) = 61.847150915091014
+mean(cheating) = 69.61879358722254
+mean(mean_feedback) = 62.43964562890745
+f = 0.0
+mean(influence) = 62.43964562890745
+f = 0.05
+mean(influence) = 62.55009441941542
+f = 0.1
+mean(influence) = 62.57105494544288
+f = 0.15
+mean(influence) = 62.590215790881835
+f = 0.2
+mean(influence) = 62.583836797740204
+
+```

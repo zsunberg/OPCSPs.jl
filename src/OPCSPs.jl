@@ -37,7 +37,8 @@ export OPCSP,
        SampledFeedbackSolver,
        SolveSampledFeedback,
        InfluenceBonusFBSolver,
-       SolveInfluenceBonusFB
+       SolveInfluenceBonusFB,
+       Cheater
 
 export solve_op,
        solve_opcsp_feedback,

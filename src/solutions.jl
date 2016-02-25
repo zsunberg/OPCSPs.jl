@@ -113,6 +113,8 @@ function solve_opcsp_feedback(op, d::Vector{Float64}, solver=GurobiExactSolver()
     return path
 end
 
+type Cheater end
+
 function cheat(op, d::Vector{Float64})
     complete_knowledge = SimpleOP(op.r+d, op.positions, op.distance_limit, op.start, op.stop)
     soln = gurobi_solve(complete_knowledge)
