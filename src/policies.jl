@@ -55,6 +55,6 @@ type MCTSAdapter <: Policy
 end
 
 function action(p::MCTSAdapter, b::OPCSPDistribution, act::OPCSPAction=OPCSPAction(0))
-    return action(p.mcts, OPCSPBelief(b), act)
+    return action(p.mcts, OPCSPBelief(b))
 end
 # updater(p::MCTSAdapter) = OPCSPUpdater(p.mcts.mdp)

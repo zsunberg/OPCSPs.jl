@@ -7,9 +7,9 @@ function initial_states(problems::Vector{OPCSP}; rng_offset::Int=1000)
     return states
 end
 
-function test_run(p::OPCSP, is::OPCSPState, solver::MCTS.DPWSolver; rng::AbstractRNG=MersenneTwister())
+function test_run(p::OPCSP, is::OPCSPState, solver::Union{MCTS.DPWSolver,MCTS.AgUCTSolver}; rng::AbstractRNG=MersenneTwister())
     policy = MCTSAdapter(POMDPs.solve(solver, OPCSPBeliefMDP(p)))
-    sim = HistoryRecorder(rng=rng, initial_state=is)
+    sim = POMDPToolbox.HistoryRecorder(rng=rng, initial_state=is)
     simr = simulate(sim, p, policy, OPCSPUpdater(p), initial_belief(p))
     path = Int[s.i for s in sim.state_hist]
     r = reward(p, is.d, path)

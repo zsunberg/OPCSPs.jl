@@ -26,7 +26,8 @@ actions(op::Union{OPCSP,OPCSPBeliefMDP}) = actions(op, OPCSPDistribution(op.star
 
 function actions(op::Union{OPCSP,OPCSPBeliefMDP}, b::Union{OPCSPDistribution, OPCSPState, OPCSPBelief}, as::OPCSPActionSpace=OPCSPActionSpace())
     if length(as.coll) < length(op)
-        resize!(as.coll, length(op))
+        as.coll = Array(Int, length(op))
+        # resize!(as.coll, length(op)) # this can run into a problem in parallel
     end
     f = filter(j->within_range(op,
                                b.i,
