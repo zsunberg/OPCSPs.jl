@@ -1,3 +1,33 @@
+Fri 26 Feb 2016 04:25:55 PM PST
+
+why are we performing poorly??? I guess I need to visualize the tree
+
+Fri 26 Feb 2016 11:45:59 AM PST
+
+0.25 seems to be a good aggregation radius for 500 iterations
+
+Fri 26 Feb 2016 11:32:21 AM PST
+
+invalid gurobi license on 
+solver = AgUCTSolver(
+    aggregator = OPCSPAg(0.2),
+    rollout_solver=FeedbackSolver(GurobiExactSolver()),
+    exploration_constant=50.0,
+    n_iterations=500,
+    rng=srng
+)
+
+Fri 26 Feb 2016 10:19:47 AM PST
+
+solver = AgUCTSolver(
+    aggregator = OPCSPAg(0.1),
+    rollout_solver=FeedbackSolver(HeuristicSolver()),
+    exploration_constant=50.0,
+    n_iterations=500,
+    rng=srng
+)
+works ok
+
 Wed 17 Feb 2016 04:53:10 PM PST
 
 [ ] aggregate states for which the L1 norm is small

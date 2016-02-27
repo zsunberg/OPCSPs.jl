@@ -48,7 +48,8 @@ function gen_two_cluster_problem(;distance_limit=6.0,
                     rho = -0.99
                 end
                 # rho = 2.0*rand(rng)-1.0
-                stdev = randn(rng,2)
+                # stdev = randn(rng,2)
+                stdev = rand(rng,2)
                 block = [     stdev[1]^2 rho*prod(stdev);
                          rho*prod(stdev)      stdev[2]^2]
                 covariance[[i,j], [i,j]] += block
@@ -94,7 +95,8 @@ function gen_problem(;distance_limit=sqrt(2),
                     rho = -0.99
                 end
                 # rho = 2.0*rand(rng)-1.0
-                stdev = randn(rng,2)
+                # stdev = randn(rng,2)
+                stdev = rand(rng,2)
                 block = [     stdev[1]^2 rho*prod(stdev);
                          rho*prod(stdev)      stdev[2]^2]
                 covariance[[i,j], [i,j]] += block

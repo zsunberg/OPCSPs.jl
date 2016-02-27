@@ -1,5 +1,8 @@
 #!/usr/bin/julia
 
+# TODO allow specification of log name
+# TODO auto log name by date
+
 using ArgParse
 
 s = ArgParseSettings()

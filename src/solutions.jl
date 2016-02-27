@@ -3,7 +3,16 @@ using Gurobi
 
 abstract OPSolver
 
-type GurobiExactSolver <: OPSolver end
+type GurobiExactSolver <: OPSolver
+    output::Bool
+    multithreaded::Bool
+    time_limit::Float64
+end
+GurobiExactSolver(;output=false,
+                   multithreaded=true,
+                   time_limit=Inf) = GurobiExactSolver(output,
+                                                       multithreaded,
+                                                       time_limit)
 
 function first_move(solver::OPSolver, op::SimpleOP)
     return solve_op(solver, op)[2]
@@ -33,13 +42,14 @@ function build_path(op, x)
 end
 
 function solve_op(solver::GurobiExactSolver, op)
-    path = build_path(op, gurobi_solve(op))
+    path = build_path(op, gurobi_solve(op, solver=solver))
     @assert distance(op, path) <= op.distance_limit
     return path
 end
 
-function gurobi_solve(op; output=0, initial::OPSolution=OPSolution())
-    m = Model(solver=Gurobi.GurobiSolver(OutputFlag=output))
+function gurobi_solve(op; solver=GurobiExactSolver(), initial::OPSolution=OPSolution())
+    threads = solver.multithreaded ? 0: 1
+    m = Model(solver=Gurobi.GurobiSolver(OutputFlag=solver.output, Threads=threads, TimeLimit=solver.time_limit))
     N = length(op)
 
     without_start = [1:op.start-1; op.start+1:N]
@@ -73,10 +83,16 @@ function gurobi_solve(op; output=0, initial::OPSolution=OPSolution())
         @addConstraint(m, sum{x[op.stop,i],i=1:N} == 0)
     end
 
-    status = JuMP.solve(m)
+    status = JuMP.solve(m, suppress_warnings=true)
 
-    if status != :Optimal
-        warn("Not solved to optimality:\n$op")
+    if solver.time_limit < Inf
+        if status != :Optimal && status != :UserLimit
+            warn("Not solved to optimality:\n$op")
+        end
+    else
+        if status != :Optimal
+            warn("Not solved to optimality:\n$op")
+        end
     end
 
     soln = OPSolution(getValue(x), getValue(u))

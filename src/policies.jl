@@ -18,7 +18,13 @@ end
 # PERF: use logical indexing (?)
 function tail_problem(op::Union{OPCSP,OPCSPBeliefMDP}, b::Union{OPCSPDistribution, OPCSPBelief};
                       prohibit_first=Int[]) # the solver will not be allowed to visit these nodes first (accomplished by increasing the distance beyond the limit)
-    openset = cat(1, b.i, collect(b.open))
+    # openset = cat(1, b.i, collect(b.open))
+    # below filters only positive nodes
+    positive = filter(i -> op.r[i]+b.dist.mean[i]>0.0 || i==op.stop, b.open)
+    # below gaurantees that we only consider feasible nodes
+    feasible = filter(j -> within_range(op, b.i, op.stop, j, b.remaining), positive)
+    openset = cat(1, b.i, collect(feasible))
+    @assert length(find(i->i==op.stop, openset))==1
     mean_op = SimpleOP(op.r[openset]+b.dist.mean[openset],
                        [],
                        b.remaining,
@@ -42,8 +48,23 @@ function first_move(solver::OPSolver, sop::SubsetOP)
 end
 
 function action(p::SolveMeanFeedback, b::Union{OPCSPDistribution,OPCSPBelief}, act::OPCSPAction=OPCSPAction(0))
-    act.next = first_move(p.solver, tail_problem(p.problem, b))
-    return act
+    tail = tail_problem(p.problem,b)
+    if length(tail.included_nodes) == 2
+        act.next = tail.included_nodes[2]
+        return act
+    elseif length(tail.included_nodes) == 3 # since the nodes must have positive expected rewards, this is the optimal solution
+        if tail.included_nodes[3]==p.problem.stop
+            act.next = tail.included_nodes[2]
+        else # included_nodes[2] is op.stop
+            act.next = tail.included_nodes[3]
+        end
+        return act
+    else
+        act.next = first_move(p.solver, tail)
+        return act
+    end
+    # act.next = first_move(p.solver, tail)
+    # return act
 end
 
 ## 
