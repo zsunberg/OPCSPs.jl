@@ -6,7 +6,7 @@ using MCTS
 N = 100
 
 problems = [gen_problem(noise=10.0,
-                        p=0.3,
+                        p=0.2,
                         n_nodes=10,
                         rng=MersenneTwister(i))
             for i in 1:N]
@@ -25,16 +25,15 @@ mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSo
 heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
 @show mean(heur_feedback)
 
-# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
 s = GurobiExactSolver(multithreaded=false)
 s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
 @show mean(s_feedback)
 
 srng = MersenneTwister(1947)
 solver = AgUCTSolver(
-    aggregator = OPCSPAg(0.2),
+    aggregator = OPCSPAg(10.0),
     rollout_solver=FeedbackSolver(s),
-    exploration_constant=30.0,
+    exploration_constant=100.0,
     n_iterations=1000,
     rng=srng
 )

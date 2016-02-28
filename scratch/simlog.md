@@ -1224,3 +1224,382 @@ mean(s_feedback) = 67.59701429188986
 mean(ag) = 66.84921467247956
 
 ```
+# [Feb 27 19:46] test_aggregation.jl
+
+## Input
+```julia
+addprocs(12)
+
+using OPCSPs
+using MCTS
+
+N = 100
+
+problems = [gen_problem(noise=10.0,
+                        p=0.3,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=100)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
+@show mean(heur_feedback)
+
+# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+s = GurobiExactSolver(multithreaded=false)
+s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
+@show mean(s_feedback)
+
+srng = MersenneTwister(1947)
+solver = AgUCTSolver(
+    aggregator = OPCSPAg(0.5),
+    rollout_solver=FeedbackSolver(s),
+    exploration_constant=30.0,
+    n_iterations=1000,
+    rng=srng
+)
+
+@time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+@show mean(ag)
+
+```
+## Output
+```
+mean(naive) = 62.3000303697411
+mean(cheating) = 88.04785097814678
+mean(mean_feedback) = 66.56136565446519
+mean(heur_feedback) = 55.77851632016088
+mean(s_feedback) = 67.59701429188986
+575.788495 seconds (763.32 k allocations: 40.788 MB, 0.00% gc time)
+mean(ag) = 63.727558886581576
+
+```
+# [Feb 27 20:00] test_aggregation.jl
+
+## Input
+```julia
+addprocs(12)
+
+using OPCSPs
+using MCTS
+
+N = 100
+
+problems = [gen_problem(noise=10.0,
+                        p=0.3,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=100)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
+@show mean(heur_feedback)
+
+# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+s = GurobiExactSolver(multithreaded=false)
+s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
+@show mean(s_feedback)
+
+srng = MersenneTwister(1947)
+solver = AgUCTSolver(
+    aggregator = OPCSPAg(10.0),
+    rollout_solver=FeedbackSolver(s),
+    exploration_constant=30.0,
+    n_iterations=1000,
+    rng=srng
+)
+
+@time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+@show mean(ag)
+
+```
+## Output
+```
+mean(naive) = 62.3000303697411
+mean(cheating) = 88.04785097814678
+mean(mean_feedback) = 66.56136565446519
+mean(heur_feedback) = 55.77851632016088
+mean(s_feedback) = 67.59701429188986
+142.981984 seconds (763.71 k allocations: 40.064 MB, 0.01% gc time)
+mean(ag) = 63.74514753493303
+
+```
+# [Feb 27 20:25] test_aggregation.jl
+
+## Input
+```julia
+addprocs(12)
+
+using OPCSPs
+using MCTS
+
+N = 100
+
+problems = [gen_problem(noise=10.0,
+                        p=0.2,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=100)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
+@show mean(heur_feedback)
+
+# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+s = GurobiExactSolver(multithreaded=false)
+s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
+@show mean(s_feedback)
+
+srng = MersenneTwister(1947)
+solver = AgUCTSolver(
+    aggregator = OPCSPAg(10.0),
+    rollout_solver=FeedbackSolver(s),
+    exploration_constant=30.0,
+    n_iterations=1000,
+    rng=srng
+)
+
+@time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+@show mean(ag)
+
+```
+## Output
+```
+mean(naive) = 62.6080023093629
+mean(cheating) = 92.98806508733134
+mean(mean_feedback) = 62.2421684283664
+mean(heur_feedback) = 59.4190168297348
+mean(s_feedback) = 63.793408563345146
+193.419580 seconds (763.37 k allocations: 40.229 MB, 0.00% gc time)
+mean(ag) = 59.60853042222685
+
+```
+# [Feb 27 20:36] test_aggregation.jl
+
+## Input
+```julia
+addprocs(12)
+
+using OPCSPs
+using MCTS
+
+N = 100
+
+problems = [gen_problem(noise=10.0,
+                        p=0.2,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=100)
+iss2 = initial_states(problems, rng_offset=100)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
+@show mean(heur_feedback)
+
+# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+s = GurobiExactSolver(multithreaded=false)
+s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
+@show mean(s_feedback)
+
+for i in 1:length(iss)
+    @assert iss[i] == iss2[i] 
+end
+
+# srng = MersenneTwister(1947)
+# solver = AgUCTSolver(
+#     aggregator = OPCSPAg(10.0),
+#     rollout_solver=FeedbackSolver(s),
+#     exploration_constant=30.0,
+#     n_iterations=1000,
+#     rng=srng
+# )
+# 
+# @time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+# @show mean(ag)
+
+```
+## Output
+```
+mean(naive) = 62.6080023093629
+mean(cheating) = 92.98806508733134
+mean(mean_feedback) = 62.2421684283664
+mean(heur_feedback) = 59.4190168297348
+mean(s_feedback) = 63.793408563345146
+
+```
+# [Feb 27 20:44] test_aggregation.jl
+
+## Input
+```julia
+addprocs(12)
+
+using OPCSPs
+using MCTS
+
+N = 100
+
+problems = [gen_problem(noise=10.0,
+                        p=0.2,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=100)
+iss2 = initial_states(problems, rng_offset=100)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
+@show mean(heur_feedback)
+
+# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+s = GurobiExactSolver(multithreaded=false)
+s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
+@show mean(s_feedback)
+
+for i in 1:length(iss)
+    @assert iss[i] == iss2[i] 
+    if s_feedback[i] != mean_feedback[i]
+        @show i
+    end
+    # @assert iss[i].covariance == iss2[i].covariance
+end
+
+# srng = MersenneTwister(1947)
+# solver = AgUCTSolver(
+#     aggregator = OPCSPAg(10.0),
+#     rollout_solver=FeedbackSolver(s),
+#     exploration_constant=30.0,
+#     n_iterations=1000,
+#     rng=srng
+# )
+# 
+# @time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+# @show mean(ag)
+
+```
+## Output
+```
+mean(naive) = 62.6080023093629
+mean(cheating) = 92.98806508733134
+mean(mean_feedback) = 62.2421684283664
+mean(heur_feedback) = 59.4190168297348
+mean(s_feedback) = 63.793408563345146
+i = 7
+i = 14
+i = 17
+i = 27
+i = 38
+i = 46
+i = 59
+i = 63
+i = 65
+i = 83
+
+```
+# [Feb 27 21:00] test_aggregation.jl
+
+## Input
+```julia
+addprocs(12)
+
+using OPCSPs
+using MCTS
+
+N = 100
+
+problems = [gen_problem(noise=10.0,
+                        p=0.2,
+                        n_nodes=10,
+                        rng=MersenneTwister(i))
+            for i in 1:N]
+
+iss = initial_states(problems, rng_offset=100)
+
+naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+@show mean(naive)
+
+cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
+@show mean(cheating)
+
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+@show mean(mean_feedback)
+
+heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
+@show mean(heur_feedback)
+
+s = GurobiExactSolver(multithreaded=false)
+s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
+@show mean(s_feedback)
+
+srng = MersenneTwister(1947)
+solver = AgUCTSolver(
+    aggregator = OPCSPAg(10.0),
+    rollout_solver=FeedbackSolver(s),
+    exploration_constant=100.0,
+    n_iterations=1000,
+    rng=srng
+)
+
+@time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+@show mean(ag)
+
+```
+## Output
+```
+mean(naive) = 62.6080023093629
+mean(cheating) = 92.98806508733134
+mean(mean_feedback) = 62.2421684283664
+mean(heur_feedback) = 59.4190168297348
+mean(s_feedback) = 63.793408563345146
+230.058444 seconds (763.28 k allocations: 40.036 MB, 0.00% gc time)
+mean(ag) = 58.42896864703559
+
+```

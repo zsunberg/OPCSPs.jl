@@ -105,7 +105,7 @@ function gen_problem(;distance_limit=sqrt(2),
     end
     for i in 1:n_nodes
         if covariance[i,i] == 0.0
-            covariance[i,i] = randn(rng)^2
+            covariance[i,i] = rand(rng)^2
         end
     end
     covariance = covariance.*(noise^2/(det(covariance)^(1/n_nodes))) 
