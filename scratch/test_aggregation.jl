@@ -25,16 +25,17 @@ mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSo
 heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
 @show mean(heur_feedback)
 
-s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+# s = GurobiExactSolver(time_limit=0.02, multithreaded=false)
+s = GurobiExactSolver(multithreaded=false)
 s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
 @show mean(s_feedback)
 
 srng = MersenneTwister(1947)
 solver = AgUCTSolver(
-    aggregator = OPCSPAg(1.0),
+    aggregator = OPCSPAg(0.2),
     rollout_solver=FeedbackSolver(s),
-    exploration_constant=50.0,
-    n_iterations=500,
+    exploration_constant=30.0,
+    n_iterations=1000,
     rng=srng
 )
 
