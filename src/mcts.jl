@@ -61,9 +61,9 @@ end
 
 type OPCSPAg <: MCTS.Aggregator 
     radius::Float64
-    anchors::Dict{Int,Set{OPCSPBelief}}
+    anchors::Dict{Int,Vector{OPCSPBelief}}
 end
-OPCSPAg(radius::Float64) = OPCSPAg(radius, Dict{Int,Set{OPCSPBelief}}())
+OPCSPAg(radius::Float64) = OPCSPAg(radius, Dict{Int,Vector{OPCSPBelief}}())
 
 same_besides_profit(u::OPCSPBelief, v::OPCSPBelief) = u.i == v.i && u.remaining == v.remaining && u.open == v.open
 
@@ -80,7 +80,7 @@ function MCTS.assign(ag::OPCSPAg, b::OPCSPBelief)
             end
         end
     else
-        i_anchors = ag.anchors[b.i] = Set{OPCSPBelief}()
+        i_anchors = ag.anchors[b.i] = Vector{OPCSPBelief}()
     end
     if !found
         push!(i_anchors, deepcopy(b))
