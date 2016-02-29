@@ -3,11 +3,11 @@ addprocs(12)
 using OPCSPs
 using MCTS
 
-N = 100
+N = 1000
 
 problems = [gen_problem(noise=10.0,
                         p=0.2,
-                        n_nodes=10,
+                        n_nodes=8,
                         rng=MersenneTwister(i))
             for i in 1:N]
 
@@ -34,7 +34,7 @@ solver = AgUCTSolver(
     aggregator = OPCSPAg(10.0),
     rollout_solver=FeedbackSolver(s),
     exploration_constant=100.0,
-    n_iterations=1000,
+    n_iterations=5000,
     rng=srng
 )
 

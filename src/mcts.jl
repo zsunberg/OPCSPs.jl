@@ -71,10 +71,11 @@ function MCTS.assign(ag::OPCSPAg, b::OPCSPBelief)
     found = false
     if haskey(ag.anchors, b.i)
         i_anchors = ag.anchors[b.i]
-        local anch
+        local anchor
         for anch in filter(an->same_besides_profit(an,b), i_anchors)
             if sum(abs(anch.dist.mean-b.dist.mean)) <= ag.radius
                 found = true
+                anchor = anch
                 break
             end
         end
@@ -85,5 +86,5 @@ function MCTS.assign(ag::OPCSPAg, b::OPCSPBelief)
         push!(i_anchors, deepcopy(b))
         return b
     end
-    return anch
+    return anchor
 end

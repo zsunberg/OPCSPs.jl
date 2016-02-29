@@ -8,6 +8,9 @@ function initial_states(problems::Vector{OPCSP}; rng_offset::Int=1000)
 end
 
 function test_run(p::OPCSP, is::OPCSPState, solver::Union{MCTS.DPWSolver,MCTS.AgUCTSolver}; rng::AbstractRNG=MersenneTwister())
+    if isa(solver, MCTS.AgUCTSolver)
+        solver.aggregator = deepcopy(solver.aggregator)
+    end
     policy = MCTSAdapter(POMDPs.solve(solver, OPCSPBeliefMDP(p)))
     sim = POMDPToolbox.HistoryRecorder(rng=rng, initial_state=is)
     simr = simulate(sim, p, policy, OPCSPUpdater(p), initial_belief(p))
@@ -45,11 +48,16 @@ function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, 
     rewards = SharedArray(Float64, length(problems))
     if parallel
         @sync @parallel for j in 1:length(problems)
-            rewards[j] = test_run(problems[j], iss[j], solver, rng=MersenneTwister(j+rng_offset))
+            try
+                rewards[j] = test_run(problems[j], iss[j], deepcopy(solver), rng=MersenneTwister(j+rng_offset))
+            catch ex
+                println("ERROR on run $(j)!")
+                rethrow(ex)
+            end
         end
     else
         for j in 1:length(problems)
-            rewards[j] = test_run(problems[j], iss[j], solver, rng=MersenneTwister(j+rng_offset))
+            rewards[j] = test_run(problems[j], iss[j], deepcopy(solver), rng=MersenneTwister(j+rng_offset))
         end
     end
     return sdata(rewards)
