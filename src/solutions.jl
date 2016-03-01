@@ -7,12 +7,15 @@ type GurobiExactSolver <: OPSolver
     output::Bool
     multithreaded::Bool
     time_limit::Float64
+    max_license_tries::Int
 end
 GurobiExactSolver(;output=false,
                    multithreaded=true,
-                   time_limit=Inf) = GurobiExactSolver(output,
+                   time_limit=Inf,
+                   max_license_tries=10) = GurobiExactSolver(output,
                                                        multithreaded,
-                                                       time_limit)
+                                                       time_limit,
+                                                       max_license_tries)
 
 function first_move(solver::OPSolver, op::SimpleOP)
     return solve_op(solver, op)[2]
@@ -49,7 +52,23 @@ end
 
 function gurobi_solve(op; solver=GurobiExactSolver(), initial::OPSolution=OPSolution())
     threads = solver.multithreaded ? 0: 1
-    m = Model(solver=Gurobi.GurobiSolver(OutputFlag=solver.output, Threads=threads, TimeLimit=solver.time_limit))
+    local m
+    for l in 1:solver.max_license_tries
+        try
+            m = Model(solver=Gurobi.GurobiSolver(OutputFlag=solver.output, Threads=threads, TimeLimit=solver.time_limit))
+        catch ex
+            if l >= solver.max_license_tries
+                println("Maximum number of tries ($l) to create Gurobi model failed.")
+                sleep(10.0)
+                rethrow(ex)
+            else
+                sleep(0.1)
+                continue
+            end
+        end
+        break
+    end
+
     N = length(op)
 
     without_start = [1:op.start-1; op.start+1:N]
@@ -83,7 +102,22 @@ function gurobi_solve(op; solver=GurobiExactSolver(), initial::OPSolution=OPSolu
         @addConstraint(m, sum{x[op.stop,i],i=1:N} == 0)
     end
 
-    status = JuMP.solve(m, suppress_warnings=true)
+    local status
+    for l in 1:solver.max_license_tries
+        try
+            status = JuMP.solve(m, suppress_warnings=true)
+        catch ex
+            if l >= solver.max_license_tries
+                println("Maximum number of tries ($l) to create Gurobi model failed.")
+                sleep(10.0)
+                rethrow(ex)
+            else
+                sleep(0.1)
+                continue
+            end
+        end
+        break
+    end
 
     if solver.time_limit < Inf
         if status != :Optimal && status != :UserLimit

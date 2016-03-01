@@ -21,6 +21,7 @@ function tail_problem(op::Union{OPCSP,OPCSPBeliefMDP}, b::Union{OPCSPDistributio
     # openset = cat(1, b.i, collect(b.open))
     # below filters only positive nodes
     positive = filter(i -> op.r[i]+b.dist.mean[i]>0.0 || i==op.stop, b.open)
+    @assert length(find(i->i==op.stop, collect(positive)))==1
     # below gaurantees that we only consider feasible nodes
     feasible = filter(j -> within_range(op, b.i, op.stop, j, b.remaining), positive)
     openset = cat(1, b.i, collect(feasible))

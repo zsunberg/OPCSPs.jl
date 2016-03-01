@@ -45,12 +45,12 @@ function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, 
     rewards = SharedArray(Float64, length(problems))
     if parallel
         @sync @parallel for j in 1:length(problems)
-            try
+            # try
                 rewards[j] = test_run(problems[j], iss[j], deepcopy(solver), rng=MersenneTwister(j+rng_offset))
-            catch ex
-                println("ERROR on run $(j)!")
-                rethrow(ex)
-            end
+            # catch ex
+                # println("ERROR on run $(j)!")
+                # rethrow(ex)
+            # end
         end
     else
         for j in 1:length(problems)

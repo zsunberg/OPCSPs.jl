@@ -13,30 +13,25 @@ problems = [gen_problem(noise=10.0,
 
 iss = initial_states(problems, rng_offset=100)
 
-naive = evaluate_performance(problems, iss, GurobiExactSolver(), rng_offset=1000)
+naive = evaluate_performance(problems, iss, GurobiExactSolver(multithreaded=false), rng_offset=1000)
 @show mean(naive)
 
 cheating = evaluate_performance(problems, iss, Cheater(), rng_offset=1000)
 @show mean(cheating)
 
-mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver()), rng_offset=1000)
+mean_feedback = evaluate_performance(problems, iss, FeedbackSolver(GurobiExactSolver(multithreaded=false)), rng_offset=1000)
 @show mean(mean_feedback)
 
-heur_feedback = evaluate_performance(problems, iss, FeedbackSolver(HeuristicSolver()), rng_offset=1000)
-@show mean(heur_feedback)
-
 s = GurobiExactSolver(multithreaded=false)
-s_feedback = evaluate_performance(problems, iss, FeedbackSolver(s), rng_offset=1000)
-@show mean(s_feedback)
 
 srng = MersenneTwister(1947)
 solver = AgUCTSolver(
-    aggregator = OPCSPAg(10.0),
+    aggregator = VoronoiOPCSPAg(10.0),
     rollout_solver=FeedbackSolver(s),
     exploration_constant=100.0,
-    n_iterations=5000,
+    n_iterations=10000,
     rng=srng
 )
 
-@time ag = evaluate_performance(problems, iss, solver, rng_offset=1000)
+@time ag = evaluate_performance(problems, iss, solver, rng_offset=1000, parallel=true)
 @show mean(ag)
