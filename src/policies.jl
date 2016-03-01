@@ -63,8 +63,8 @@ function action(p::SolveMeanFeedback, b::Union{OPCSPDistribution,OPCSPBelief}, a
         act.next = first_move(p.solver, tail)
         return act
     end
-    # act.next = first_move(p.solver, tail)
-    # return act
+    act.next = first_move(p.solver, tail)
+    return act
 end
 
 ## 
@@ -81,9 +81,10 @@ function action(p::MCTSAdapter, b::OPCSPDistribution, act::OPCSPAction=OPCSPActi
     acts = collect(actions(op, s))
     if length(acts) == 1
         act.next = acts[1].next
+        # @assert act.next == op.stop
         return act
     elseif length(acts) == 2
-        notstop = acts[1].next == op.stop ? 2 : 1
+        notstop = acts[1].next == op.stop ? acts[2].next : acts[1].next
         act.next = op.r[notstop]+s.dist.mean[notstop] > 0.0 ? notstop : op.stop
         return act
     end
