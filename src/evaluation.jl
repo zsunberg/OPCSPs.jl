@@ -8,9 +8,6 @@ function initial_states(problems::Vector{OPCSP}; rng_offset::Int=1000)
 end
 
 function test_run(p::OPCSP, is::OPCSPState, solver::Union{MCTS.DPWSolver,MCTS.AgUCTSolver}; rng::AbstractRNG=MersenneTwister())
-    if isa(solver, MCTS.AgUCTSolver)
-        solver.aggregator = deepcopy(solver.aggregator)
-    end
     policy = MCTSAdapter(POMDPs.solve(solver, OPCSPBeliefMDP(p)))
     sim = POMDPToolbox.HistoryRecorder(rng=rng, initial_state=is)
     simr = simulate(sim, p, policy, OPCSPUpdater(p), initial_belief(p))

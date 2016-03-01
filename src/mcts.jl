@@ -65,18 +65,48 @@ type OPCSPAg <: MCTS.Aggregator
 end
 OPCSPAg(radius::Float64) = OPCSPAg(radius, Dict{Int,Vector{OPCSPBelief}}())
 
+# inlined below
 same_besides_profit(u::OPCSPBelief, v::OPCSPBelief) = u.i == v.i && u.remaining == v.remaining && u.open == v.open
+
+function MCTS.initialize!(ag::OPCSPAg, mdp::OPCSPBeliefMDP)
+    ag.anchors = Dict{Int,Vector{OPCSPBelief}}()    
+end
 
 function MCTS.assign(ag::OPCSPAg, b::OPCSPBelief)
     found = false
+    @assert length(b.dist.mean) < 32
+    @assert b.open.limit == 256
+    @assert b.open.fill1s == false
     if haskey(ag.anchors, b.i)
         i_anchors = ag.anchors[b.i]
         local anchor
-        for anch in filter(an->same_besides_profit(an,b), i_anchors)
-            if sum(abs(anch.dist.mean-b.dist.mean)) <= ag.radius
-                found = true
-                anchor = anch
-                break
+        bestdist = ag.radius
+        for anch in i_anchors
+            if anch.remaining == b.remaining # if the open set is still the same, remaining must be
+                # if length(anch.dist.mean) >= 32
+                #     sameopen = anch.open == b.open
+                # else # this is the dirtiest thing I've ever done
+                #     @assert anch.open.fill1s == b.open.fill1s
+                #     @assert anch.open.limit == 256
+                #     @assert b.open.limit == 256
+                #     sameopen = anch.open.bits[1] == b.open.bits[1]
+                # end
+                # if sameopen
+                # if anch.open == b.open
+                if anch.open.bits[1] == b.open.bits[1]
+                    dist = 0.0
+                    for i in 1:length(anch.dist)
+                        dist += abs(anch.dist.mean[i]-b.dist.mean[i])
+                        if dist > bestdist
+                            break
+                        end
+                    end
+                    if dist <= bestdist
+                        found = true
+                        anchor = anch
+                        bestdist = dist
+                    end
+                end
             end
         end
     else
