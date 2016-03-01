@@ -104,19 +104,19 @@ function MCTS.assign(ag::VoronoiOPCSPAg, b::OPCSPBelief)
     return anchor
 end
 
-type VoxelOPCSPAg <: MCTS.Aggregator 
-    diam::Float64
-    # agstates::Dict{Tuple{Int,IntSet,Vector{Int}},Int}
-    # next_id::Int
-end
-# VoxelOPCSPAg(diam::Float64) = VoxelOPCSPAg(diam, Dict{Tuple{Int,IntSet,Vector{Int}},Int}(), 1)
-
-function MCTS.initialize!(ag::VoxelOPCSPAg, mdp::OPCSPBeliefMDP)
-    # ag.agstates = Dict{Tuple{Int,IntSet,Vector{Int}},Int}()
-    # ag.next_id = 1
-end
-
-function MCTS.assign(ag::VoxelOPCSPAg, b::OPCSPBelief)
-    voxel = floor(Int, b.dist.mean/ag.diam)
-    return (b.i, b.open, b.remaining, voxel)
-end
+# type VoxelOPCSPAg <: MCTS.Aggregator 
+#     diam::Float64
+#     # agstates::Dict{Tuple{Int,IntSet,Vector{Int}},Int}
+#     # next_id::Int
+# end
+# # VoxelOPCSPAg(diam::Float64) = VoxelOPCSPAg(diam, Dict{Tuple{Int,IntSet,Vector{Int}},Int}(), 1)
+# 
+# function MCTS.initialize!(ag::VoxelOPCSPAg, mdp::OPCSPBeliefMDP)
+#     # ag.agstates = Dict{Tuple{Int,IntSet,Vector{Int}},Int}()
+#     # ag.next_id = 1
+# end
+# 
+# function MCTS.assign(ag::VoxelOPCSPAg, b::OPCSPBelief)
+#     voxel = floor(Int, b.dist.mean/ag.diam)
+#     return (b.i, b.open, b.remaining, voxel)
+# end
