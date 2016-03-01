@@ -19,29 +19,33 @@ function rand(rng::AbstractRNG, as::OPCSPActionSpace, a::OPCSPAction=OPCSPAction
     return a
 end
 
-actions(op::Union{OPCSP,OPCSPBeliefMDP}) = actions(op, OPCSPDistribution(op.start,
-                                                   delete!(IntSet(1:length(op)), op.start),
-                                                   op.distance_limit,
-                                                   MVN(zeros(0),ones(0,0))))
+actions(op::Union{OPCSP,OPCSPBeliefMDP}) = actions(op, op.start, delete!(IntSet(1:length(op)), op.start), op.distance_limit)
 
-function actions(op::Union{OPCSP,OPCSPBeliefMDP}, b::Union{OPCSPDistribution, OPCSPState, OPCSPBelief}, as::OPCSPActionSpace=OPCSPActionSpace())
+actions(op::Union{OPCSP,OPCSPBeliefMDP}, b::Union{OPCSPDistribution, OPCSPState, OPCSPBelief}, as::OPCSPActionSpace=OPCSPActionSpace()) = actions(op, b.i, b.open, b.remaining, as)
+
+actions(op::Union{OPCSP,OPCSPBeliefMDP}, b::Tuple{Int,IntSet,Float64,Vector{Int}}) = actions(op, b[1], b[2], b[3])
+
+
+function actions(op::Union{OPCSP,OPCSPBeliefMDP}, i::Int, open::IntSet, remaining::Float64, as::OPCSPActionSpace=OPCSPActionSpace())
     if length(as.coll) < length(op)
         as.coll = Array(Int, length(op))
         # resize!(as.coll, length(op)) # this can run into a problem in parallel
     end
     f = filter(j->within_range(op,
-                               b.i,
+                               i,
                                op.stop,
                                j,
-                               b.remaining),
-               b.open)
-    i = 0
+                               remaining),
+               open)
+    k = 0
     for a in f
-        i += 1
-        @inbounds as.coll[i] = a
+        k += 1
+        @inbounds as.coll[k] = a
     end
-    as.len = i
+    as.len = k
     return as
 end
+
+
 
 ### performance may be better with a BitArray of the right length instead of an IntSet

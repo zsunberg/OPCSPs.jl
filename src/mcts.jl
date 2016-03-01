@@ -59,27 +59,25 @@ function MCTS.next_action(gen::PreSolvedActionGenerator, mdp::OPCSPBeliefMDP, s:
     return move
 end
 
-type VaroniOPCSPAg <: MCTS.Aggregator 
+# Aggregators
+type VoronoiOPCSPAg <: MCTS.Aggregator 
     radius::Float64
-    anchors::Dict{Tuple{Int,IntSet},Vector{OPCSPBelief}}
+    anchors::Dict{Tuple{Int,Float64,IntSet},Vector{OPCSPBelief}}
 end
-VaroniOPCSPAg(radius::Float64) = VaroniOPCSPAg(radius, Dict{Int,Vector{OPCSPBelief}}())
+VoronoiOPCSPAg(radius::Float64) = VoronoiOPCSPAg(radius, Dict{Tuple{Int,Float64,IntSet},Vector{OPCSPBelief}}())
 
-# inlined below
-same_besides_profit(u::OPCSPBelief, v::OPCSPBelief) = u.i == v.i && u.remaining == v.remaining && u.open == v.open
-
-function MCTS.initialize!(ag::VaroniOPCSPAg, mdp::OPCSPBeliefMDP)
-    ag.anchors = Dict{Int,Vector{OPCSPBelief}}()    
+function MCTS.initialize!(ag::VoronoiOPCSPAg, mdp::OPCSPBeliefMDP)
+    ag.anchors = Dict{Tuple{Int, Float64, IntSet},Vector{OPCSPBelief}}()    
 end
 
-function MCTS.assign(ag::VaroniOPCSPAg, b::OPCSPBelief)
+function MCTS.assign(ag::VoronoiOPCSPAg, b::OPCSPBelief)
     found = false
     len = length(b.dist.mean)
     # @assert length(b.dist.mean) < 32
     # @assert b.open.limit == 256
     # @assert b.open.fill1s == false
-    if haskey(ag.anchors, (b.i,b.open))
-        similar = ag.anchors[(b.i,b.open)]
+    if haskey(ag.anchors, (b.i, b.remaining, b.open))
+        similar = ag.anchors[(b.i, b.remaining, b.open)]
         local anchor
         bestdist = ag.radius
         for anch in similar
@@ -97,11 +95,28 @@ function MCTS.assign(ag::VaroniOPCSPAg, b::OPCSPBelief)
             end
         end
     else
-        similar = ag.anchors[(b.i, b.open)] = Vector{OPCSPBelief}()
+        similar = ag.anchors[(b.i, b.remaining, b.open)] = Vector{OPCSPBelief}()
     end
     if !found
         push!(similar, deepcopy(b))
         return b
     end
     return anchor
+end
+
+type VoxelOPCSPAg <: MCTS.Aggregator 
+    diam::Float64
+    # agstates::Dict{Tuple{Int,IntSet,Vector{Int}},Int}
+    # next_id::Int
+end
+# VoxelOPCSPAg(diam::Float64) = VoxelOPCSPAg(diam, Dict{Tuple{Int,IntSet,Vector{Int}},Int}(), 1)
+
+function MCTS.initialize!(ag::VoxelOPCSPAg, mdp::OPCSPBeliefMDP)
+    # ag.agstates = Dict{Tuple{Int,IntSet,Vector{Int}},Int}()
+    # ag.next_id = 1
+end
+
+function MCTS.assign(ag::VoxelOPCSPAg, b::OPCSPBelief)
+    voxel = floor(Int, b.dist.mean/ag.diam)
+    return (b.i, b.open, b.remaining, voxel)
 end
