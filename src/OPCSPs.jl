@@ -39,7 +39,7 @@ export OPCSP,
        InfluenceBonusFBSolver,
        SolveInfluenceBonusFB,
        Cheater,
-       OPCSPAg
+       VaroniOPCSPAg
 
 export solve_op,
        solve_opcsp_feedback,

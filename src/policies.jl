@@ -72,10 +72,21 @@ end
 # uses an OPCSPUpdater, so every time it needs to choose an action, it gets an OPCSPDistribution
 # which corresponds to an OPCSPBelief. This can be fed into the MCTSSolver with the OPCSPBeliefMDP as its model
 type MCTSAdapter <: Policy
-    mcts::Policy
+    pol::Policy
 end
 
 function action(p::MCTSAdapter, b::OPCSPDistribution, act::OPCSPAction=OPCSPAction(0))
-    return action(p.mcts, OPCSPBelief(b))
+    s = OPCSPBelief(b)
+    op = p.pol.mdp
+    acts = collect(actions(op, s))
+    if length(acts) == 1
+        act.next = acts[1].next
+        return act
+    elseif length(acts) == 2
+        notstop = acts[1].next == op.stop ? 2 : 1
+        act.next = op.r[notstop]+s.dist.mean[notstop] > 0.0 ? notstop : op.stop
+        return act
+    end
+    return action(p.pol, s)
 end
 # updater(p::MCTSAdapter) = OPCSPUpdater(p.mcts.mdp)
