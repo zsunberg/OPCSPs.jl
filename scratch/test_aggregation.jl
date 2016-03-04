@@ -29,9 +29,9 @@ s = GurobiExactSolver(multithreaded=false)
 
 srng = MersenneTwister(1947)
 solver = AgUCTSolver(
-    aggregator = VoronoiOPCSPAg(5.0),
+    aggregator=VoxelOPCSPAg(2.0),
     rollout_solver=FeedbackSolver(s),
-    exploration_constant=100.0,
+    exploration_constant=30.0,
     n_iterations=50000,
     rng=srng
 )

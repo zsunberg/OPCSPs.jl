@@ -46,7 +46,7 @@ end
 
 function solve_op(solver::GurobiExactSolver, op)
     path = build_path(op, gurobi_solve(op, solver=solver))
-    @assert distance(op, path) <= op.distance_limit
+    @assert distance(op, path) <= op.distance_limit + 1e-3*op.distance_limit
     return path
 end
 
