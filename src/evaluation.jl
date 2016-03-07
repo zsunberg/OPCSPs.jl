@@ -58,7 +58,7 @@ function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, 
             # end
         end
         =#
-        prog = Progress( N, dt=0.5, barlen=20, output=STDERR)
+        prog = Progress( N, dt=0.1, barlen=50, output=STDERR)
         rewards = pmap(test_run,
                        prog,
                        problems,
