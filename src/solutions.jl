@@ -170,3 +170,23 @@ function cheat(op, d::Vector{Float64})
     soln = gurobi_solve(complete_knowledge)
     return build_path(op, soln)
 end
+
+type OnlyUnobservableUncertainty end
+
+function unobservable_dist(op, d::Vector{Float64})
+    ucov = zeros(op.covariance)
+    ud = zeros(d)
+    for i in 1:length(op)
+        cov = copy(op.covariance)
+        mvn = MVN(d,cov)
+        for j in 1:length(op)
+            if j!=i
+                mvn = apply_measurement(mvn, j, d[j])
+            end
+        end
+        @assert sum(mvn.covariance) == mvn.covariance[i,i]
+        ucov[i,i] = mvn.covariance[i,i]
+        ud[i] = mvn.mean[i]
+    end
+    return MVN(ud, ucov)
+end
