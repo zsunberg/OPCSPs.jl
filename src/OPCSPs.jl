@@ -17,6 +17,9 @@ include("MVNTools.jl")
 using OPCSPs.MVNTools
 using AutoHashEquals
 
+using NearestNeighbors
+using Distances
+
 export MVNTools
 
 export OPCSP,
@@ -39,6 +42,7 @@ export OPCSP,
        InfluenceBonusFBSolver,
        SolveInfluenceBonusFB,
        Cheater,
+       OnlyUnobservableUncertainty,
        VoronoiOPCSPAg,
        VoxelOPCSPAg
 

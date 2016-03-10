@@ -178,7 +178,7 @@ function unobservable_dist(op, d::Vector{Float64})
     ud = zeros(d)
     for i in 1:length(op)
         cov = copy(op.covariance)
-        mvn = MVN(d,cov)
+        mvn = MVN(zeros(d),cov)
         for j in 1:length(op)
             if j!=i
                 mvn = apply_measurement(mvn, j, d[j])
@@ -188,5 +188,13 @@ function unobservable_dist(op, d::Vector{Float64})
         ucov[i,i] = mvn.covariance[i,i]
         ud[i] = mvn.mean[i]
     end
+    @assert isdiag(ucov)
     return MVN(ud, ucov)
+end
+
+function cheat_observe_others(op, d::Vector{Float64})
+    udist = unobservable_dist(op, d)
+    uproblem = SimpleOP(op.r+udist.mean, op.positions, op.distance_limit, op.start, op.stop)
+    soln = gurobi_solve(uproblem)
+    return build_path(op, soln)
 end

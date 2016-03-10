@@ -44,25 +44,15 @@ function test_run(p::OPCSP, is::OPCSPState, solver::Cheater, rng::AbstractRNG=Me
     return reward(p, is.d, path)
 end
 
-# function test_run(p::OPCSP, is::OPCSPState, solver::ObserveOthers, rng::AbstractRNG=MersenneTwister())
-#     path = cheat(p, is.d)
-#     return reward(p, is.d, path)
-# end
+function test_run(p::OPCSP, is::OPCSPState, solver::OnlyUnobservableUncertainty, rng::AbstractRNG=MersenneTwister())
+    path = cheat_observe_others(p, is.d)
+    return reward(p, is.d, path)
+end
 
 function evaluate_performance(problems::Vector{OPCSP}, iss::Vector{OPCSPState}, solver; rng_offset::Int=100, parallel=true)
     # rewards = SharedArray(Float64, length(problems))
     N = length(problems)
     if parallel
-        #=
-        @sync @parallel for j in 1:length(problems)
-            # try
-                rewards[j] = test_run(problems[j], iss[j], deepcopy(solver), rng=MersenneTwister(j+rng_offset))
-            # catch ex
-                # println("ERROR on run $(j)!")
-                # rethrow(ex)
-            # end
-        end
-        =#
         prog = Progress( N, dt=0.1, barlen=50, output=STDERR)
         rewards = pmap(test_run,
                        prog,

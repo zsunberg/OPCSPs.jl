@@ -14,3 +14,15 @@ end
 
 within_range(op, start, stop, j, dist) = op.distances[start,j] + op.distances[j,stop] <= dist
 within_range(op, j) = within_range(op, op.start, op.stop, j, op.distance_limit)
+
+typealias SimilarStateDict{T} Dict{Tuple{Int,Float64,IntSet}, Tuple{NaiveNeighborTree, Dict{Vector{Float64}, T}}}
+type NearestStateMap{T}
+    data::SimilarStateDict{T}
+end
+NearestStateMap{T}() = NearestStateMap{T}(SimilarStateDict{T}())
+
+function get_nearest(m::NearestStateMap)
+end
+
+function insert_state!(m::NearestStateMap)
+end

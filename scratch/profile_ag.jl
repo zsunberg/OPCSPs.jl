@@ -6,16 +6,17 @@ import POMDPToolbox
 
 p = gen_informative(noise_2norm=100.0,
                 n_nodes=10,
-                rbar=10.0
+                n_connected=4,
+                rbar=10.0,
                 rng=MersenneTwister(1))
 is = rand!(MersenneTwister(1543), create_state(p), initial_belief(p))
 
 s = GurobiExactSolver(multithreaded=false)
 solver = AgUCTSolver(
-    aggregator=VoronoiOPCSPAg(20.0),
+    aggregator=VoronoiOPCSPAg(50.0),
     rollout_solver=FeedbackSolver(s),
     exploration_constant=100.0,
-    n_iterations=100000,
+    n_iterations=10000,
     rng=MersenneTwister(1947)
 )
 
