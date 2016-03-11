@@ -83,7 +83,7 @@ function MCTS.assign(ag::VoronoiOPCSPAg, b::OPCSPBelief)
         for anch in similar
             dist = 0.0
             for i in 1:len
-                dist += abs(anch.dist.mean[i]-b.dist.mean[i])
+                @inbounds dist += abs(anch.dist.mean[i]-b.dist.mean[i])
                 if dist > bestdist
                     break
                 end

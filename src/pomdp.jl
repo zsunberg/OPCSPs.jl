@@ -1,14 +1,14 @@
 @auto_hash_equals type OPCSPState <: State
     i::Int
     open::IntSet # unvisited
-    d::Vector{Float64}
     remaining::Float64
+    d::Vector{Float64}
 end
 # ==(u::OPCSPState, v::OPCSPState) = u.i==v.i && u.v==v.v && u.d==v.d && u.remaining==v.remaining
 # ==(u::OPCSPState, v::OPCSPState) = error("== is being used for a state") # want to see if this is being used
 # hash(s::OPCSPState) = hash(s.i, hash(s.v, hash(s.d, hash(s.remaining))))
-create_transition_distribution(problem::OPCSP) = OPCSPState(0, IntSet(), Array(Float64, length(problem)), 0.0)
-create_state(op::OPCSP) = OPCSPState(0, IntSet(), Array(Float64, length(op)), 0.0)
+create_transition_distribution(problem::OPCSP) = OPCSPState(0, IntSet(), 0.0, Array(Float64, length(problem)))
+create_state(op::OPCSP) = OPCSPState(0, IntSet(), 0.0, Array(Float64, length(op)))
 
 @auto_hash_equals type OPCSPAction <: Action
     next::Int
