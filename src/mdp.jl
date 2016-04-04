@@ -26,6 +26,7 @@ create_state(problem::OPCSPBeliefMDP) = OPCSPBelief(
     IntSet(),
     0.0,
     MVN(Array(Float64,length(problem)), Array(Float64, length(problem), length(problem))))
+get_d(b::OPCSPBelief) = b.dist.mean
 
 function MCTS.generate(p::OPCSPBeliefMDP, s::OPCSPBelief, a::OPCSPAction, rng::AbstractRNG)
     sp = create_state(p)
@@ -44,6 +45,7 @@ initial_state(p::OPCSPBeliefMDP) = OPCSPBelief(
     p.distance_limit, 
     MVN(zeros(length(p)), p.covariance)
     )
+Base.mean(b::OPCSPBelief) = OPCSPState(b.i, b.open, b.remaining, b.dist.mean)
 
 
 # get the reward for whichever action you pick, not whichever state you're in

@@ -60,17 +60,17 @@ function MCTS.next_action(gen::PreSolvedActionGenerator, mdp::OPCSPBeliefMDP, s:
 end
 
 # Aggregators
-type VoronoiOPCSPAg <: MCTS.Aggregator 
+type OldVoronoiOPCSPAg <: MCTS.Aggregator 
     radius::Float64
     anchors::Dict{Tuple{Int,Float64,IntSet},Vector{OPCSPBelief}}
 end
-VoronoiOPCSPAg(radius::Float64) = VoronoiOPCSPAg(radius, Dict{Tuple{Int,Float64,IntSet},Vector{OPCSPBelief}}())
+OldVoronoiOPCSPAg(radius::Float64) = OldVoronoiOPCSPAg(radius, Dict{Tuple{Int,Float64,IntSet},Vector{OPCSPBelief}}())
 
-function MCTS.initialize!(ag::VoronoiOPCSPAg, mdp::OPCSPBeliefMDP)
+function MCTS.initialize!(ag::OldVoronoiOPCSPAg, mdp::OPCSPBeliefMDP)
     ag.anchors = Dict{Tuple{Int, Float64, IntSet},Vector{OPCSPBelief}}()    
 end
 
-function MCTS.assign(ag::VoronoiOPCSPAg, b::OPCSPBelief)
+function MCTS.assign(ag::OldVoronoiOPCSPAg, b::OPCSPBelief)
     found = false
     len = length(b.dist.mean)
     # @assert length(b.dist.mean) < 32
@@ -102,6 +102,27 @@ function MCTS.assign(ag::VoronoiOPCSPAg, b::OPCSPBelief)
         return b
     end
     return anchor
+end
+
+type VoronoiOPCSPAg <: MCTS.Aggregator 
+    radius::Float64
+    map::NearestStateMap{OPCSPState}
+end
+VoronoiOPCSPAg(radius::Float64) = VoronoiOPCSPAg(radius, NearestStateMap{OPCSPState}())
+
+function MCTS.initialize!(ag::VoronoiOPCSPAg, mdp::OPCSPBeliefMDP)
+    ag.map = NearestStateMap(OPCSPState, mdp)
+end
+
+function MCTS.assign(ag::VoronoiOPCSPAg, b::OPCSPBelief)
+    if has_similar(ag.map, b)
+        anchor, dist = get_nearest(ag.map, b)
+        if dist <= ag.radius
+            return anchor
+        end
+    end
+    insert!(ag.map, b, mean(b))
+    return b
 end
 
 type VoxelOPCSPAg <: MCTS.Aggregator 

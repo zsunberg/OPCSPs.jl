@@ -1,4 +1,3 @@
-
 ## Best feedback policy
 type SolveMeanFeedback <: Policy
     problem::Union{OPCSP, OPCSPBeliefMDP}
@@ -47,6 +46,10 @@ function first_move(solver::OPSolver, sop::SubsetOP)
     subset_path = solve_op(solver, sop.op)
     return sop.included_nodes[subset_path[2]]
 end
+function first_move(sop::SubsetOP, soln::OPSolution)
+    subset_path = build_path(sop.op, soln)
+    return sop.included_nodes[subset_path[2]]
+end
 
 function action(p::SolveMeanFeedback, b::Union{OPCSPDistribution,OPCSPBelief}, act::OPCSPAction=OPCSPAction(0))
     tail = tail_problem(p.problem,b)
@@ -67,6 +70,52 @@ function action(p::SolveMeanFeedback, b::Union{OPCSPDistribution,OPCSPBelief}, a
     act.next = first_move(p.solver, tail)
     return act
 end
+
+
+type SolveMeanFeedbackCache <: Policy
+    problem::Union{OPCSP, OPCSPBeliefMDP}
+    solver::OPSolver
+    cache::NearestStateMap{OPSolution}
+end
+updater(p::SolveMeanFeedback) = OPCSPUpdater(p.problem)
+type CachingFeedbackSolver <: Solver
+    solver::OPSolver
+    use_caching::Bool
+    resolve_radius::Float64 # if the problem is outside of this radius, resolve it otherwise, just take the nearest previous answer
+end
+POMDPs.solve(s::CachingFeedbackSolver, p::Union{OPCSP, OPCSPBeliefMDP}) = SolveMeanFeedbackCache(p, s.solver, NearestStateMap{OPSolution}())
+
+function action(p::SolveMeanFeedbackCache, b::Union{OPCSPDistribution,OPCSPBelief}, act::OPCSPAction=OPCSPAction(0))
+    tail = tail_problem(p.problem,b)
+    if length(tail.included_nodes) == 2
+        act.next = tail.included_nodes[2]
+        return act
+    elseif length(tail.included_nodes) == 3 # since the nodes must have positive expected rewards, this is the optimal solution
+        if tail.included_nodes[3]==p.problem.stop
+            act.next = tail.included_nodes[2]
+        else # included_nodes[2] is op.stop
+            act.next = tail.included_nodes[3]
+        end
+        return act
+    else
+        if has_similar(p.cache, b)
+            nearest, dist = get_nearest(p.cache, b)
+            if dist <= resolve_radius
+                act.next = first_move(tail, nearest)
+                return act
+            else
+                soln = gurobi_solve(tail, solver=p.solver, initial=nearest)
+            end
+        else
+            soln = gurobi_solve(tail, solver=p.solver)
+        end
+        insert!(p.cache, mean(b), soln)
+        act.next = first_move(tail, soln)
+        return act
+    end
+end
+
+
 
 ## 
 # A policy for an OPCSP POMDP
