@@ -1,3 +1,56 @@
+Mon 04 Apr 2016 04:37:03 PM PDT
+
+started doing hc testing again
+
+Mon 04 Apr 2016 04:02:19 PM PDT
+
+Good Winner: hc
+Mar 3 15:28
+problems = [gen_highly_connected(noise_2norm=200.0,
+                                 n_nodes=10,
+                                 n_connected=1,
+                                 p=0.5,
+                                 rbar=10.0,
+                                 rng=MersenneTwister(i+1000))
+            for i in 1:N]
+solver = AgUCTSolver(
+    aggregator=VoronoiOPCSPAg(20.0),
+    rollout_solver=FeedbackSolver(s),
+    exploration_constant=100.0,
+    n_iterations=10000,
+    rng=srng
+)
+mean(naive) = 62.18140120177995
+mean(cheating) = 156.34384769276068
+mean(mean_feedback) = 75.39763705511096
+mean(heur_feedback) = 64.95959468876876
+628.332142 seconds (2.54 M allocations: 201.844 MB, 0.00% gc time)
+mean(ag) = 81.70862975367459
+
+
+Good Winner:
+Mar 2 15:44
+solver = AgUCTSolver(
+    aggregator=VoxelOPCSPAg(5.0),
+    rollout_solver=FeedbackSolver(s),
+    exploration_constant=30.0,
+    n_iterations=100000,
+    rng=srng
+)
+mean(naive) = 58.86473321025825
+mean(cheating) = 83.76176715219519
+mean(mean_feedback) = 60.44452927260988
+mean(heur_feedback) = 52.08520881486283
+5807.852239 seconds (2.08 M allocations: 168.724 MB, 0.00% gc time)
+mean(ag) = 61.36469088808311
+
+
+Mon 04 Apr 2016 09:21:07 AM PDT
+
+winners
+Feb 26 1406
+Feb 27 
+
 Mon 29 Feb 2016 12:19:32 PM PST
 
 profiled
