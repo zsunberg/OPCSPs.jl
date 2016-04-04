@@ -1,3 +1,7 @@
+Sat 12 Mar 2016 05:40:02 PM PST
+
+implemented op solution caching - still need to test
+
 Mon 29 Feb 2016 12:19:32 PM PST
 
 profiled

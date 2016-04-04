@@ -44,6 +44,7 @@ export OPCSP,
        Cheater,
        OnlyUnobservableUncertainty,
        VoronoiOPCSPAg,
+       OldVoronoiOPCSPAg,
        VoxelOPCSPAg
 
 export solve_op,

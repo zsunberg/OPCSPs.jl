@@ -10,8 +10,8 @@ p = gen_informative(noise_2norm=100.0,
                 rbar=10.0,
                 rng=MersenneTwister(1))
 is = rand!(MersenneTwister(1543), create_state(p), initial_belief(p))
-
 s = GurobiExactSolver(multithreaded=false)
+# s = HeuristicSolver()
 solver = AgUCTSolver(
     aggregator=VoronoiOPCSPAg(50.0),
     rollout_solver=FeedbackSolver(s),

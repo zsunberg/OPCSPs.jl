@@ -9,6 +9,7 @@ end
 # hash(s::OPCSPState) = hash(s.i, hash(s.v, hash(s.d, hash(s.remaining))))
 create_transition_distribution(problem::OPCSP) = OPCSPState(0, IntSet(), 0.0, Array(Float64, length(problem)))
 create_state(op::OPCSP) = OPCSPState(0, IntSet(), 0.0, Array(Float64, length(op)))
+get_d(s::OPCSPState) = s.d
 
 @auto_hash_equals type OPCSPAction <: Action
     next::Int
@@ -64,6 +65,8 @@ initial_belief(p::OPCSP) = OPCSPDistribution(
     p.distance_limit, 
     MVN(zeros(length(p)), p.covariance)
     )
+get_d(d::OPCSPDistribution) = d.dist.mean
+Base.mean(d::OPCSPDistribution) = OPCSPState(
 
 # this could be inefficient because we are copying too much
 # note that state transitions are deterministic

@@ -28,6 +28,7 @@ end
 OPSolution() = OPSolution(nothing,nothing)
 
 build_path(op, s::OPSolution) = build_path(op, s.x)
+first_move(op, s::OPSolution) = build_path(op, s)[2]
 
 function build_path(op, x)
     xopt = round(Int,x)
